@@ -1,6 +1,6 @@
 `default_nettype none
 
-module test;
+module calculator_tb;
 
 	typedef struct {			//transaction structure
     bit 	[31:0] 		stimulus_data;
@@ -17,7 +17,7 @@ module test;
 	transaction req4Trans[$];		//transaction queue for request4
 
 
-	bit clk;
+	bit c_clk;
 	bit [7:0]			reset;
 	
 	bit [3:0] 		req1_cmd_in;
@@ -60,7 +60,7 @@ initial begin
 	
 		for(int i=0; i<7; i++) begin	//Hold resetto '1111111'b for seven cycles
 			@(posedge c_clk);
-			reset = 7b1111111;
+			reset = 7'b1111111;
 		end
 		
 		

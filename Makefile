@@ -20,9 +20,9 @@
 
 
 
-FILES = alu_input_stage.v  alu_output_stage.v  calc1_top.v  exdbin_mac.v  holdreg.v  mux_out.v  priority.v  shifter.v
+FILES = calculator_tb.sv alu_input_stage.v  alu_output_stage.v  calc1_top.v  exdbin_mac.v  holdreg.v  mux_out.v  priority.v  shifter.v
 
-TOPLEVEL = calculator_tb.sv
+TOPLEVEL = calculator_tb 
 
 
 
