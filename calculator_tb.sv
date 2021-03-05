@@ -98,7 +98,7 @@ calc1_top calc1_top(	//i'm assuming the encrypted module is called calc1_top ...
 
 /////////////////////////////////////////////////////////////////////////////////////// timing stuff
 
-clocking cb(@posedge c_clk);	//specifies when inputs are set and outputs read
+clocking cb @(posedge c_clk);	//specifies when inputs are set and outputs read
 
 	default input #2ns output #2ns;		//read from DUT outputs at posedge - 2ns
 																		//write to DUT inputs at posedge + 2ns
@@ -124,7 +124,7 @@ clocking cb(@posedge c_clk);	//specifies when inputs are set and outputs read
 	input cb_dout3 = out_data3;
 	input cb_dout4 = out_data4;
 	
-	
+
 endclocking
 
 //clock generator
@@ -142,7 +142,7 @@ end
 
 task reset();
       
-	for(int i=0; i<7; i++) begin	//Hold reset to '1111111'b for seven cycles
+	for (int i=0;i<7;i++) begin	//Hold reset to '1111111'b for seven cycles
 		@(posedge c_clk);
 		reset = 7'b1111111;		//should be written at posedge+2ns
 		$display("time = %tns, i = %0d", $time, i);
