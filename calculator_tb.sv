@@ -61,7 +61,7 @@ initial begin
 
 	if(event_mode) begin	//event_mode test cases
 	
-		reset();
+		do_reset();
 		
 		
 	
