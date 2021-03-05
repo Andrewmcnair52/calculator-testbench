@@ -140,12 +140,12 @@ end
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
 
-task reset();
+task do_reset(inout bit [8:0] reset);
       
 	for (int i=0;i<7;i++) begin	//Hold reset to '1111111'b for seven cycles
 		@(posedge c_clk);
-		reset = 7'b1111111;		//should be written at posedge+2ns
-		$display("time = %tns, i = %0d", $time, i);
+		reset[7:1] = 7'b1111111;		//should be written at posedge+2ns
+		$display("time = %tns, i = %0d, reset=%b", $time, i,reset);
 	end
 	
 endtask
