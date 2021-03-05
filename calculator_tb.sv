@@ -11,6 +11,7 @@ module calculator_tb;
     logic	[1:0]			actual_resp;
   } transaction;
 
+	//setup transaction queue for each request, see homework 2
 	transaction req1Trans[$];		//transaction queue for request1
 	transaction req2Trans[$];		//transaction queue for request2
 	transaction req3Trans[$];		//transaction queue for request3
@@ -51,6 +52,8 @@ module calculator_tb;
 	
 	bit event_mode = 1;		//event mode if high, else cycle mode
 
+///////////////////////////////////////////////////////////////////////////////////////testing begins
+
 initial begin
 
 	//initialization
@@ -58,7 +61,7 @@ initial begin
 
 	if(event_mode) begin	//event_mode test cases
 	
-		for(int i=0; i<7; i++) begin	//Hold resetto '1111111'b for seven cycles
+		for(int i=0; i<7; i++) begin	//Hold reset to '1111111'b for seven cycles
 			@(posedge c_clk);
 			reset = 7'b1111111;
 		end
@@ -67,14 +70,13 @@ initial begin
 	
 	end else begin	//cycle mode test cases
 	
-	
-	
 	end
 
 
 
 end
 
+///////////////////////////////////////////////////////////////////////////////////////DUT hookup
 
 calc1_top calc1_top(	//i'm assuming the encrypted module is called calc1_top ....
 	.c_clk(c_clk),
@@ -97,14 +99,49 @@ calc1_top calc1_top(	//i'm assuming the encrypted module is called calc1_top ...
 	.out_data4(out_data4)
 );
 
+///////////////////////////////////////////////////////////////////////////////////////timing stuff
+
+clocking cb(@posedge c_clk);	//specifies when inputs are set and outputs read
+
+	default input #2ns output #2ns;		//read from DUT outputs at posedge - 2ns
+																		//write to DUT inputs at posedge + 2ns
+
+	//notes, tb inputs are DUt outputs, and vice versa
+	//use cb_ signals when setting/reading at clk endge
+	output cb_din1 = req1_data_in;
+	output cb_din2 = req2_data_in;
+	output cb_din3 = req3_data_in;
+	output cb_din4 = req4_data_in;
+	output cb_cin1 = req1_cmd_in;
+	output cb_cin2 = req2_cmd_in;
+	output cb_cin3 = req3_cmd_in;
+	output cb_cin4 = req4_cmd_in;
+	output cb_reset = reset;
+	
+	input cb_resp1 = out_resp1;
+	input cb_resp2 = out_resp2;
+	input cb_resp3 = out_resp3;
+	input cb_resp4 = out_resp4;
+	input cb_dout1 = out_data1;
+	input cb_dout2 = out_data2;
+	input cb_dout3 = out_data3;
+	input cb_dout4 = out_data4;
+	
+	
+endclocking
+
+//clock generator
 initial begin
 	forever 
 		if(event_mode) begin
-			#50ns c_clk=!c_clk;
+			#20ns c_clk=!c_clk;
 		end else begin
 			c_clk = 1;
 		end
 end
+
+/////////////////////////////////////////////////////////////////////////////////////// the end
+
 endmodule
 
 
