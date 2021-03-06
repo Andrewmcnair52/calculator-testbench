@@ -19,8 +19,8 @@ module calculator_tb;
 	transaction req4Trans[$];		//transaction queue for request4
 
 
-	bit c_clk;
-	bit [7:0]			reset;
+	bit 			c_clk;
+	bit [6:0]		reset;
 	
 	bit [3:0] 		req1_cmd_in;
 	bit [31:0] 		req1_data_in;
@@ -31,13 +31,13 @@ module calculator_tb;
 	bit [3:0] 		req4_cmd_in;
 	bit [31:0] 		req4_data_in;
 
-	bit [1:0]			out_resp1;
+	bit [1:0]		out_resp1;
 	bit [31:0]		out_data1;
-	bit [1:0]			out_resp2;
+	bit [1:0]		out_resp2;
 	bit [31:0]		out_data2;
-	bit [1:0]			out_resp3;
+	bit [1:0]		out_resp3;
 	bit [31:0]		out_data3;
-	bit [1:0]			out_resp4;
+	bit [1:0]		out_resp4;
 	bit [31:0]		out_data4;
 	
 	/*	input commands
@@ -58,7 +58,7 @@ module calculator_tb;
 initial begin
 
 	//initialization
-	req1Trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0});		//100 + 39 = 139
+	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0});		//100 + 39 = 139
 
 	if(event_mode) begin	//event_mode test cases
 	
@@ -69,15 +69,28 @@ initial begin
 		req1_data_in = req1Trans[0].param1;
 		req1_cmd_in = req1Trans[0].cmd;
 		
+		@(posedge c_clk);
+		$display("req1_data_in: %0d, req1_cmd_in: %h", req1_data_in, req1_cmd_in);
+
 		@(negedge c_clk);
 		req1_data_in = req1Trans[0].param2;
 		req1_cmd_in = req1Trans[0].cmd;
+
+		@(posedge c_clk);
+		$display("req1_data_in: %0d, req1_cmd_in: %0d", req1_data_in, req1_cmd_in);		
 		
-		for(int i=0; i<30; i++) begin
-			@(posedge c_clk);
-			$display("data: %h, resp: %h", cb_dout1, cb_resp1);
-		end
+		@(posedge c_clk);
+		$display("data: %0d, resp: %h", out_data1, out_resp1);
+
+		@(posedge c_clk);                    
+                $display("data: %0d, resp: %h", out_data1, out_resp1);
 	
+		@(posedge c_clk);            
+                $display("data: %0d, resp: %h", out_data1, out_resp1);
+
+
+
+
 	end else begin	//cycle mode test cases
 	
 	end
@@ -146,7 +159,7 @@ endclocking
 initial begin
 	forever
   	if(event_mode) begin
-      #20ns c_clk=!c_clk;
+      #50ns c_clk=!c_clk;
     end else begin
        c_clk = 1;
     end
@@ -160,8 +173,10 @@ task do_reset(inout bit [7:0] reset);	//reset the device
 
 	for (int i=0;i<7;i++) begin	//Hold reset to '1111111'b for seven cycles
 		@(posedge c_clk);
-		reset[7:1] = 7'b1111111; //should be written at posedge+2ns
+		reset[6:0] = 7'b1111111;
 	end
+
+	@(posedge c_clk) reset = 7'b0000000;
 	
 endtask
 
