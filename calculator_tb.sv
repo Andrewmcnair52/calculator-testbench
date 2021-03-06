@@ -65,40 +65,9 @@ initial begin
 	
 		//test 1.1
 		do_reset(reset);
-		@(posedge c_clk);
-		cb.req1_data_in <= req1Trans[0].param1;	//written @ edge + 2ns
-		cb.req1_cmd_in <= req1Trans[0].cmd;			//written @ edge + 2ns
+		run_trans1(0);
 		
-		@(posedge c_clk);
-		$display("req1_data_in: %0d, req1_cmd_in: %h", req1_data_in, req1_cmd_in);
-
-		@(posedge c_clk);
-		cb.req1_data_in <= req1Trans[0].param2;	//written @ edge + 2ns
-		cb.req1_cmd_in <= req1Trans[0].cmd;			//written @ edge + 2ns
-		
-		@(posedge c_clk);
-		$display("req1_data_in: %0d, req1_cmd_in: %0d", req1_data_in, req1_cmd_in);		
-		
-		for(int i=0; i<5; i++) begin		//give it 5 cycles to respond
-			@(posedge c_clk);
-			if(i == 4) begin
-				req1Trans[0].actual_resp = out_resp1;
-				req1Trans[0].actual_data = out_data1;
-				$display("%t: no response, %p", $time, req1Trans[0]);
-			end
-			else if (out_resp1 != 0) begin
-				req1Trans[0].actual_resp = out_resp1;
-				req1Trans[0].actual_data = out_data1;
-				$display("%t: response after %0d cycles, %p", $time, i+1, req1Trans[0]);
-				break;
-			end
-		end
-
-
-		@(posedge c_clk);
-		$display("req1_data_in: %0d, req1_cmd_in: %0d", req1_data_in, req1_cmd_in);		
-
-	end else begin	//cycle mode test cases
+	end else begin	//cycle mode
 	
 	end
 
@@ -167,6 +136,31 @@ end
 
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
+task run_trans1(input int index);
+
+	@(posedge c_clk);
+	cb.req1_data_in <= req1Trans[index].param1;	//written @ edge + 2ns
+	cb.req1_cmd_in <= req1Trans[index].cmd;			//written @ edge + 2ns
+
+	@(posedge c_clk);
+	cb.req1_data_in <= req1Trans[index].param2;	//written @ edge + 2ns
+		
+	for(int i=0; i<5; i++) begin		//give it 5 cycles to respond
+		@(posedge c_clk);
+		if(i == 4) begin
+			req1Trans[index].actual_resp = out_resp1;
+			req1Trans[index].actual_data = out_data1;
+			$display("%t: no response, %p", $time, req1Trans[index]);
+		end
+		else if (out_resp1 != 0) begin
+			req1Trans[index].actual_resp = out_resp1;
+			req1Trans[index].actual_data = out_data1;
+			$display("%t: response after %0d cycles, %p", $time, i+1, req1Trans[index]);
+			break;
+		end
+	end
+
+endtask
 
 task do_reset(inout bit [7:0] reset);	//reset the device
 
