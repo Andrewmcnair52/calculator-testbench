@@ -6,10 +6,10 @@ module calculator_tb;
     bit 	[31:0] 		param1;
     bit		[31:0]		param2;
     bit 	[3:0]			cmd;
-    bit 	[31:0] 		expected_data;
     logic [31:0] 		actual_data;
-    bit		[1:0]			expected_resp;
     logic	[1:0]			actual_resp;
+    bit 	[31:0] 		expected_data;
+    bit		[1:0]			expected_resp;
   } transaction;
 
 	//setup transaction queue for each request, see homework 2
@@ -65,7 +65,8 @@ initial begin
 	
 		//test 1.1
 		do_reset(reset);
-		run_trans1(0);
+		
+		run_trans1(0);	//single channel
 		
 	end else begin	//cycle mode
 	
@@ -134,7 +135,7 @@ initial begin
 end
 
 
-/////////////////////////////////////////////////////////////////////////////////////// functions that do things
+/////////////////////////////////////////////////////////////////////////////////////// run transactions
 
 task run_trans1(input int index);
 
@@ -144,23 +145,64 @@ task run_trans1(input int index);
 
 	@(posedge c_clk);
 	cb.req1_data_in <= req1Trans[index].param2;	//written @ edge + 2ns
+	cb.req1_cmd_in <= 2'b00;										//written @ edge + 2ns
 		
 	for(int i=0; i<5; i++) begin		//give it 5 cycles to respond
 		@(posedge c_clk);
 		if(i == 4) begin
 			req1Trans[index].actual_resp = out_resp1;
 			req1Trans[index].actual_data = out_data1;
-			$display("%t: no response, %p", $time, req1Trans[index]);
+			$display("%t: c1, no response, %p", $time, req1Trans[index]);
 		end
 		else if (out_resp1 != 0) begin
 			req1Trans[index].actual_resp = out_resp1;
 			req1Trans[index].actual_data = out_data1;
-			$display("%t: response after %0d cycles, %p", $time, i+1, req1Trans[index]);
+			$display("%t: c1, response after %0d cycles, %p", $time, i+1, req1Trans[index]);
 			break;
 		end
 	end
 
 endtask
+
+
+/////////////////////////////////////////////////////////////////////////////////////// functions that do things
+
+function void set_expected (input transaction t);
+
+	if(t.cmd==4'b0000) begin				//no response
+			
+		t.expected_resp = 2'b00;
+	
+	end
+	else if(t.cmd==4'b0001) begin	//addition
+		
+		if( (t.param1 + t.param2) > 4294967295 ) begin	//overflow
+			t.expected_resp = 2'b10;
+		end else begin
+			t.expected_resp = 2'b01;
+			t.expected_data = t.param1 + t.param2;
+		end
+	
+	end
+	else if(t.cmd==4'b0010) begin		//subtraction
+	
+		if( (t.param1 - t.param2) < 0 ) begin	//underflow
+			t.expected_resp = 2'b10;
+		end else begin
+			t.expected_resp = 2'b01;
+			t.expected_data = t.param1 - t.param2;
+		end
+	
+	end
+	else if(t.cmd==4'b0101) begin	//shift left
+		
+	end
+	else if(t.cmd==4'b0110) begin	//shift right
+		
+	end
+	else if() begin
+
+endfunction
 
 task do_reset(inout bit [7:0] reset);	//reset the device
 
