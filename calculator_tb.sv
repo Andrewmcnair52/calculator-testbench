@@ -65,16 +65,16 @@ initial begin
 	
 		//test 1.1
 		do_reset(reset);
-		@(posdge c_clk);
-		cb.req1_data_in = req1Trans[0].param1;	//written @ edge + 2ns
-		cb.req1_cmd_in = req1Trans[0].cmd;			//written @ edge + 2ns
+		@(posedge c_clk);
+		cb.req1_data_in <= req1Trans[0].param1;	//written @ edge + 2ns
+		cb.req1_cmd_in <= req1Trans[0].cmd;			//written @ edge + 2ns
 		
 		@(posedge c_clk);
 		$display("req1_data_in: %0d, req1_cmd_in: %h", req1_data_in, req1_cmd_in);
 
 		@(posedge c_clk);
-		cb.req1_data_in = req1Trans[0].param2;	//written @ edge + 2ns
-		cb.req1_cmd_in = req1Trans[0].cmd;			//written @ edge + 2ns
+		cb.req1_data_in <= req1Trans[0].param2;	//written @ edge + 2ns
+		cb.req1_cmd_in <= req1Trans[0].cmd;			//written @ edge + 2ns
 
 		@(posedge c_clk);
 		$display("req1_data_in: %0d, req1_cmd_in: %0d", req1_data_in, req1_cmd_in);		
