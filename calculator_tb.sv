@@ -65,16 +65,16 @@ initial begin
 	
 		//test 1.1
 		do_reset(reset);
-		@(negedge c_clk);
-		req1_data_in = req1Trans[0].param1;
-		req1_cmd_in = req1Trans[0].cmd;
+		@(posdge c_clk);
+		cb.req1_data_in = req1Trans[0].param1;	//written @ edge + 2ns
+		cb.req1_cmd_in = req1Trans[0].cmd;			//written @ edge + 2ns
 		
 		@(posedge c_clk);
 		$display("req1_data_in: %0d, req1_cmd_in: %h", req1_data_in, req1_cmd_in);
 
-		@(negedge c_clk);
-		req1_data_in = req1Trans[0].param2;
-		req1_cmd_in = req1Trans[0].cmd;
+		@(posedge c_clk);
+		cb.req1_data_in = req1Trans[0].param2;	//written @ edge + 2ns
+		cb.req1_cmd_in = req1Trans[0].cmd;			//written @ edge + 2ns
 
 		@(posedge c_clk);
 		$display("req1_data_in: %0d, req1_cmd_in: %0d", req1_data_in, req1_cmd_in);		
@@ -83,10 +83,10 @@ initial begin
 		$display("data: %0d, resp: %h", out_data1, out_resp1);
 
 		@(posedge c_clk);                    
-                $display("data: %0d, resp: %h", out_data1, out_resp1);
+     $display("data: %0d, resp: %h", out_data1, out_resp1);
 	
 		@(posedge c_clk);            
-                $display("data: %0d, resp: %h", out_data1, out_resp1);
+    $display("data: %0d, resp: %h", out_data1, out_resp1);
 
 
 
@@ -133,24 +133,16 @@ clocking cb @(posedge c_clk);   //specifies when inputs are set and outputs read
 
         //notes, tb inputs are DUt outputs, and vice versa
         //use cb_ signals when setting/reading at clk endge
-        output cb_din1 = req1_data_in;
-        output cb_din2 = req2_data_in;
-        output cb_din3 = req3_data_in;
-        output cb_din4 = req4_data_in;
-        output cb_cin1 = req1_cmd_in;
-        output cb_cin2 = req2_cmd_in;
-        output cb_cin3 = req3_cmd_in;
-        output cb_cin4 = req4_cmd_in;
+        output req1_data_in, req1_cmd_in;
+        output req2_data_in, req2_cmd_in;
+        output req3_data_in, req3_cmd_in;
+        output req4_data_in, req4_cmd_in;
         output cb_reset = reset;
-
-        input cb_resp1 = out_resp1;
-        input cb_resp2 = out_resp2;
-        input cb_resp3 = out_resp3;
-        input cb_resp4 = out_resp4;
-        input cb_dout1 = out_data1;
-        input cb_dout2 = out_data2;
-        input cb_dout3 = out_data3;
-        input cb_dout4 = out_data4;
+        
+        input out_data1, out_resp1;
+        input out_data2, out_resp2;
+        input out_data3, out_resp3;
+        input out_data4, out_resp4;
 
 
 endclocking
