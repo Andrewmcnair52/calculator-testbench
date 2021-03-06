@@ -61,7 +61,7 @@ initial begin
 
 	if(event_mode) begin	//event_mode test cases
 	
-		do_reset();
+		do_reset(reset);
 		
 		
 	
@@ -140,12 +140,11 @@ end
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
 
-task do_reset(inout bit [8:0] reset);
-      
+task do_reset(inout bit [7:0] reset);	//reset the device
+
 	for (int i=0;i<7;i++) begin	//Hold reset to '1111111'b for seven cycles
 		@(posedge c_clk);
-		reset[7:1] = 7'b1111111;		//should be written at posedge+2ns
-		$display("time = %tns, i = %0d, reset=%b", $time, i,reset);
+		reset[7:1] = 7'b1111111; //should be written at posedge+2ns
 	end
 	
 endtask
