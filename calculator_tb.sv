@@ -3,8 +3,9 @@
 module calculator_tb;
 
 	typedef struct {			//transaction structure
-    bit 	[31:0] 		stimulus_data;
-    bit 	[3:0]			stimulus_cmd;
+    bit 	[31:0] 		param1;
+    bit		[31:0]		param2;
+    bit 	[3:0]			cmd;
     bit 	[31:0] 		expected_data;
     logic [31:0] 		actual_data;
     bit		[1:0]			expected_resp;
@@ -57,13 +58,25 @@ module calculator_tb;
 initial begin
 
 	//initialization
-
+	req1Trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0});		//100 + 39 = 139
 
 	if(event_mode) begin	//event_mode test cases
 	
+	
+		//test 1.1
 		do_reset(reset);
+		@(negedge c_clk);
+		req1_data_in = req1Trans[0].param1;
+		req1_cmd_in = req1Trans[0].cmd;
 		
+		@(negedge c_clk);
+		req1_data_in = req1Trans[0].param2;
+		req1_cmd_in = req1Trans[0].cmd;
 		
+		for(int i=0; i<30; i++) begin
+			@(posedge c_clk);
+			$display("data: %h, resp: %h", cb_dout1, cb_resp1);
+		end
 	
 	end else begin	//cycle mode test cases
 	
@@ -96,46 +109,49 @@ calc1_top calc1_top(	//i'm assuming the encrypted module is called calc1_top ...
 	.out_data4(out_data4)
 );
 
+
+
 /////////////////////////////////////////////////////////////////////////////////////// timing stuff
 
-clocking cb @(posedge c_clk);	//specifies when inputs are set and outputs read
+clocking cb @(posedge c_clk);   //specifies when inputs are set and outputs read
 
-	default input #2ns output #2ns;		//read from DUT outputs at posedge - 2ns
-																		//write to DUT inputs at posedge + 2ns
+        default input #2ns output #2ns;         //read from DUT outputs at posedge - 2ns                                                        
+                                                //write to DUT inputs at posedge + 2ns
 
-	//notes, tb inputs are DUt outputs, and vice versa
-	//use cb_ signals when setting/reading at clk endge
-	output cb_din1 = req1_data_in;
-	output cb_din2 = req2_data_in;
-	output cb_din3 = req3_data_in;
-	output cb_din4 = req4_data_in;
-	output cb_cin1 = req1_cmd_in;
-	output cb_cin2 = req2_cmd_in;
-	output cb_cin3 = req3_cmd_in;
-	output cb_cin4 = req4_cmd_in;
-	output cb_reset = reset;
-	
-	input cb_resp1 = out_resp1;
-	input cb_resp2 = out_resp2;
-	input cb_resp3 = out_resp3;
-	input cb_resp4 = out_resp4;
-	input cb_dout1 = out_data1;
-	input cb_dout2 = out_data2;
-	input cb_dout3 = out_data3;
-	input cb_dout4 = out_data4;
-	
+        //notes, tb inputs are DUt outputs, and vice versa
+        //use cb_ signals when setting/reading at clk endge
+        output cb_din1 = req1_data_in;
+        output cb_din2 = req2_data_in;
+        output cb_din3 = req3_data_in;
+        output cb_din4 = req4_data_in;
+        output cb_cin1 = req1_cmd_in;
+        output cb_cin2 = req2_cmd_in;
+        output cb_cin3 = req3_cmd_in;
+        output cb_cin4 = req4_cmd_in;
+        output cb_reset = reset;
+
+        input cb_resp1 = out_resp1;
+        input cb_resp2 = out_resp2;
+        input cb_resp3 = out_resp3;
+        input cb_resp4 = out_resp4;
+        input cb_dout1 = out_data1;
+        input cb_dout2 = out_data2;
+        input cb_dout3 = out_data3;
+        input cb_dout4 = out_data4;
+
 
 endclocking
 
 //clock generator
 initial begin
-	forever 
-		if(event_mode) begin
-			#20ns c_clk=!c_clk;
-		end else begin
-			c_clk = 1;
-		end
+	forever
+  	if(event_mode) begin
+      #20ns c_clk=!c_clk;
+    end else begin
+       c_clk = 1;
+    end
 end
+
 
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
