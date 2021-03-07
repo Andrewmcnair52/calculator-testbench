@@ -75,7 +75,7 @@ initial begin
 
 	if(event_mode) begin	//event_mode test cases (always event mode for now)
 		
-		//1.1 test response
+		//1.1 and 1.3 test response
 		do_reset(reset);
 			
 		for(int j=1; j<5; j++) begin		//for every channel
@@ -102,8 +102,8 @@ initial begin
 		  do_reset(reset);  //reset after finnished with each channel
 		  
 	  end
-		
-		//1.3
+	  
+	  //1.4
 		
 		
 
