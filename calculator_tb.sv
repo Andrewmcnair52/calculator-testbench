@@ -5,15 +5,16 @@ module calculator_tb;
 	typedef struct {			//transaction structure
     bit 	[31:0] 		param1;
     bit		[31:0]		param2;
-    bit 	[3:0]			cmd;
-    logic [31:0] 		actual_data;
-    logic	[1:0]			actual_resp;
+    bit 	[3:0]		cmd;
+    logic       [31:0]          actual_data;
+    logic	[1:0]		actual_resp;
     bit 	[31:0] 		expected_data;
-    bit		[1:0]			expected_resp;
+    bit		[1:0]		expected_resp;
+    string                      desc;
   } transaction;
 
-	//setup transaction queue for each request, see homework 2
-	transaction response_trans[$];	//response test transactions
+	//setup transaction queues to store transactions (transactions are tests)
+	transaction response_trans[$];          //response test transactions
 	transaction req1Trans[$];		//transaction queue for request1
 	transaction req2Trans[$];		//transaction queue for request2
 	transaction req3Trans[$];		//transaction queue for request3
@@ -59,25 +60,24 @@ module calculator_tb;
 initial begin
 
 	//initialization
-	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0});   //100 + 39 = 139
-	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0});   //5 - 2 = 3
-	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0});   //3 << 2 = 12
-	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0});   //12 >> 2 = 3
+	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
+	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
+	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
+	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
 	
-	response_Trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0});              //test no response
-	response_Trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0});              //add regular
-	response_Trans.push_back('{32'hFF0ABCDE, 32'h0F00CDAB, 4'h1, 0, 0, 0, 0})   //add with overflow
-	response_Trans.push_back('{32'hFF0ABCDE, 32'hFFF0CDAB, 4'h2, 0, 0, 0, 0})   //sub with underflow
-	response_Trans.push_back('{32'h27, 32'hFFF0CDAB, 4'h7, 0, 0, 0, 0})          //invalid
+	response_trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0, "no response test"});
+	response_trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0, "data ready response test"});
+	response_trans.push_back('{32'hFFFFFFFF, 32'h1, 4'h1, 0, 0, 0, 0, "overflow response test"});
+	response_trans.push_back('{32'h22, 32'h23, 4'h2, 0, 0, 0, 0, "underflow response test"});
 
 
 	if(event_mode) begin	//event_mode test cases
 		
 		//test 1.1 test response
 		do_reset(reset);
-		foreach(response_Trans[i]) begin
-			set_expected(req1Trans[i]);
-			run_trans(req1Trans[i],1);      //single channel
+		foreach(response_trans[i]) begin
+			set_expected(response_trans[i]);
+			run_trans(response_trans[i],1);      //single channel
 		end
 
 
@@ -148,9 +148,9 @@ initial begin
 end
 
 
-/////////////////////////////////////////////////////////////////////////////////////// run transactions
+/////////////////////////////////////////////////////////////////////////////////////// functions
 
-task automatic run_trans(ref transaction t, int debug);
+task automatic run_trans(ref transaction t, input integer debug);
 
 	@(posedge c_clk);
 	cb.req1_data_in <= t.param1;	//written @ edge + 2ns
@@ -182,9 +182,8 @@ task automatic run_trans(ref transaction t, int debug);
 endtask
 
 
-/////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
-function void automatic check_trans(ref transaction t);
+function automatic void check_trans(ref transaction t);
 
   
 
