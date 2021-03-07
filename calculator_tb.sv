@@ -80,8 +80,8 @@ initial begin
 		do_reset(reset);
 		foreach(response_trans[i]) begin
 			set_expected(response_trans[i]);
-			run_trans(response_trans[i],1);      //single channel, debug messages enabled
-			check_trans(response_trans[i]);
+			run_trans(response_trans[i],1);      //1 = debug messages enabled
+			check_trans(response_trans[i],1);    //mode 1, check response only
 		end
 
 
@@ -201,7 +201,9 @@ task automatic set_expected (ref transaction t);
 	end
 	else if(t.cmd==4'b0001) begin	//addition
 		
-		if( (t.param1 + t.param2) > 4294967295 ) begin	//overflow
+		longint result = t.param1 + t.param2;
+		
+		if( result > 4294967295 ) begin	//overflow
 			t.expected_resp = 2'b10;
 		end else begin
 			t.expected_resp = 2'b01;
@@ -211,7 +213,7 @@ task automatic set_expected (ref transaction t);
 	end
 	else if(t.cmd==4'b0010) begin		//subtraction
 	
-		if( (t.param1 - t.param2) < 0 ) begin	//underflow
+		if( (t.param1 < t.param2) begin	//underflow
 			t.expected_resp = 2'b10;
 		end else begin
 			t.expected_resp = 2'b01;
@@ -254,17 +256,43 @@ endtask
 
 
 
-function automatic void check_trans(ref transaction t);
+function automatic void check_trans(ref transaction t, input int mode); //check transactions for actual/expected mismatches
 
   string tmp_string;
 
-  if(t.actual_data != t.expected_data) begin
-    error_count = error_count + 1;
-    $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
+  if(mode == 0) begin   //check response only
+  
+    if(t.actual_resp != t.expected_resp) begin
+      error_count = error_count + 1;
+      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
       t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
-    error_messages.push_back(tmp_string);
-  end else begin
-    success_count = success_count + 1;
+     error_messages.push_back(tmp_string);
+    end else begin
+      success_count = success_count + 1;
+    end
+  
+  end else if(mode == 1) begin  //check data only
+  
+    if(t.actual_data != t.expected_data) begin
+      error_count = error_count + 1;
+      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
+      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+     error_messages.push_back(tmp_string);
+    end else begin
+      success_count = success_count + 1;
+    end
+  
+  end else begin  //check data and response
+
+    if( (t.actual_data!=t.expected_data) && (t.actual_resp!=t.expected_resp) ) begin
+      error_count = error_count + 1;
+      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
+      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+      error_messages.push_back(tmp_string);
+    end else begin
+      success_count = success_count + 1;
+    end
+
   end
 
 endfunction
