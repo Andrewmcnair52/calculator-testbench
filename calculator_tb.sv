@@ -18,7 +18,7 @@ module calculator_tb;
 	transaction operation_trans[$];         //tests for basic operations
 	
 	int error_count=0, success_count=0;
-        string error_messages[$];
+  string error_messages[$];
 
 	bit 			c_clk;
 	bit [6:0]		reset;
@@ -66,7 +66,7 @@ initial begin
 	response_trans.push_back('{32'hFFFFFFFF, 32'h1, 4'h1, 0, 0, 0, 0, "overflow response test"});
 	response_trans.push_back('{32'h22, 32'h23, 4'h2, 0, 0, 0, 0, "underflow response test"});
 	
-	//1.2 basic operation testing on all channels
+	//1.2 basic operation testing on all channels     <- should probibly add more of a sample size
 	operation_trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
 	operation_trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
 	operation_trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
@@ -78,23 +78,34 @@ initial begin
 		//1.1 test response
 		do_reset(reset);
 			
-		/*
 		for(int j=1; j<5; j++) begin		//for every channel
 			foreach(response_trans[i]) begin	//run each test
 				set_expected(response_trans[i]);
-				run_trans(response_trans[i], j, 1);  //channels 1-4, debug messages enabled
+				run_trans(response_trans[i], j, 0);  //channels 1-4, no debug messages
 				check_trans(response_trans[i],0);    //mode 0: check response only
 			end
-		end
-		*/
-		
-		foreach(operation_trans[i]) begin
-		  set_expected(operation_trans[i]);
-		  run_trans(operation_trans[i], 4, 1);  //channel 4, debug messages enabled
-		  check_trans(operation_trans[i],0);    //mode 0: check response only
+			
+			do_reset(reset);  //reset after finnished with each channel
+			
 		end
 		
-		//1.2
+		error_messages.push_back(""); //keep error message log legible with seperators
+		
+		//1.2 operations testing for each channel
+		for(int j=1; j<5; j++) begin		//for every channel
+		  foreach(operation_trans[i]) begin
+		   set_expected(operation_trans[i]);
+		   run_trans(operation_trans[i], j, 1);   //debug on
+		   check_trans(operation_trans[i],3);    //mode 3: check data and response
+		  end
+		
+		  do_reset(reset);  //reset after finnished with each channel
+		  
+	  end
+		
+		//1.3
+		
+		
 
 
 	end else begin	//cycle mode, dunno how this works or if we need to test it
@@ -359,7 +370,7 @@ endtask
 
 
 
-function automatic void check_trans(ref transaction t, input int mode); //check transactions for actual/expected mismatches
+function automatic void check_trans(ref transaction t, input int channel, input int mode); //check transactions for actual/expected mismatches
 
   string tmp_string;
 
@@ -367,8 +378,8 @@ function automatic void check_trans(ref transaction t, input int mode); //check 
   
     if(t.actual_resp != t.expected_resp) begin
       error_count = error_count + 1;
-      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
-      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h], on channel %0d",
+      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp, channel);
      error_messages.push_back(tmp_string);
     end else begin
       success_count = success_count + 1;
@@ -378,8 +389,8 @@ function automatic void check_trans(ref transaction t, input int mode); //check 
   
     if(t.actual_data != t.expected_data) begin
       error_count = error_count + 1;
-      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
-      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h], on channel %0d",
+      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp, channel);
      error_messages.push_back(tmp_string);
     end else begin
       success_count = success_count + 1;
@@ -389,8 +400,8 @@ function automatic void check_trans(ref transaction t, input int mode); //check 
 
     if( (t.actual_data!=t.expected_data) && (t.actual_resp!=t.expected_resp) ) begin
       error_count = error_count + 1;
-      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
-      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+      $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h], on channel %0d",
+      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp, channel);
       error_messages.push_back(tmp_string);
     end else begin
       success_count = success_count + 1;
