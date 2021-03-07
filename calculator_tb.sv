@@ -81,8 +81,8 @@ initial begin
 		for(int j=1; j<5; j++) begin		//for every channel
 			foreach(response_trans[i]) begin	//run each test
 				set_expected(response_trans[i]);
-				run_trans(response_trans[i], j, 0);  //channels 1-4, no debug messages
-				check_trans(response_trans[i],0);    //mode 0: check response only
+				run_trans(response_trans[i], j, 0);      //channels 1-4, no debug messages
+				check_trans(response_trans[i], j, 0);    //mode 0: check response only
 			end
 			
 			do_reset(reset);  //reset after finnished with each channel
@@ -95,8 +95,8 @@ initial begin
 		for(int j=1; j<5; j++) begin		//for every channel
 		  foreach(operation_trans[i]) begin
 		   set_expected(operation_trans[i]);
-		   run_trans(operation_trans[i], j, 1);   //debug on
-		   check_trans(operation_trans[i],3);    //mode 3: check data and response
+		   run_trans(operation_trans[i], j, 1);      //debug on
+		   check_trans(operation_trans[i], j, 3);    //mode 3: check data and response
 		  end
 		
 		  do_reset(reset);  //reset after finnished with each channel
