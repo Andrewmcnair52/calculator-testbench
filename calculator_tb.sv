@@ -78,13 +78,20 @@ initial begin
 		//1.1 test response
 		do_reset(reset);
 			
+		/*
 		for(int j=1; j<5; j++) begin		//for every channel
 			foreach(response_trans[i]) begin	//run each test
-				do_reset(reset);
 				set_expected(response_trans[i]);
 				run_trans(response_trans[i], j, 1);  //channels 1-4, debug messages enabled
 				check_trans(response_trans[i],0);    //mode 0: check response only
 			end
+		end
+		*/
+		
+		foreach(operation_trans[i]) begin
+		  set_expected(operation_trans[i]);
+		  run_trans(operation_trans[i], 4, 1);  //channel 4, debug messages enabled
+		  check_trans(operation_trans[i],0);    //mode 0: check response only
 		end
 		
 		//1.2
@@ -284,7 +291,7 @@ task automatic run_trans(ref transaction t, input integer channel, input integer
 		  end
 	  end
   
-  end
+  end 
 
 endtask
 
