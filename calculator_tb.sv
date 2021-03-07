@@ -5,12 +5,12 @@ module calculator_tb;
 	typedef struct {			//transaction structure
     bit 	[31:0] 		param1;
     bit		[31:0]		param2;
-    bit 	[3:0]		cmd;
-    logic       [31:0]          actual_data;
-    logic	[1:0]		actual_resp;
+    bit 	[3:0]     cmd;
+    logic [31:0]    actual_data;
+    logic	[1:0]     actual_resp;
     bit 	[31:0] 		expected_data;
-    bit		[1:0]		expected_resp;
-    string                      desc;
+    bit		[1:0]     expected_resp;
+    string          desc;
   } transaction;
 
 	//setup transaction queues to store transactions (transactions are tests)
@@ -19,7 +19,9 @@ module calculator_tb;
 	transaction req2Trans[$];		//transaction queue for request2
 	transaction req3Trans[$];		//transaction queue for request3
 	transaction req4Trans[$];		//transaction queue for request4
-
+	
+	int errror_count=0, success_count=0;
+  string error_messages[$];
 
 	bit 			c_clk;
 	bit [6:0]		reset;
@@ -59,33 +61,42 @@ module calculator_tb;
 
 initial begin
 
-	//initialization
+	//supposed to be 1.2 needs work
 	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
 	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
 	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
 	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
 	
+	//1.1 test response
 	response_trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0, "no response test"});
 	response_trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0, "data ready response test"});
 	response_trans.push_back('{32'hFFFFFFFF, 32'h1, 4'h1, 0, 0, 0, 0, "overflow response test"});
 	response_trans.push_back('{32'h22, 32'h23, 4'h2, 0, 0, 0, 0, "underflow response test"});
 
 
-	if(event_mode) begin	//event_mode test cases
+	if(event_mode) begin	//event_mode test cases (always event mode for now)
 		
-		//test 1.1 test response
+		//1.1 test response
 		do_reset(reset);
 		foreach(response_trans[i]) begin
 			set_expected(response_trans[i]);
-			run_trans(response_trans[i],1);      //single channel
+			run_trans(response_trans[i],1);      //single channel, debug messages enabled
+			check_trans(response_trans[i]);
 		end
 
 
-	end else begin	//cycle mode
+	end else begin	//cycle mode, dunno how this works or if we need to test it
 	
 	end
 
-
+  //summary: print summary of tests
+  $display("\n=======================================================\nSUMMARY\n=======================================================\n");
+  $display("errors: %0d, successes: %0d\n", error_count, success_count);
+  foreach(error_messages[i]) begin
+    $display(error_messages[i]);
+  end
+  
+  
 
 end
 
@@ -166,28 +177,20 @@ task automatic run_trans(ref transaction t, input integer debug);
 			t.actual_resp = out_resp1;
 			t.actual_data = out_data1;
 			if(debug==1) begin
-				$display("%t: c1, no response, %p", $time, t);
+				$display("no response, %p", t);
 			end
 		end
 		else if (out_resp1 != 0) begin
 			t.actual_resp = out_resp1;
 			t.actual_data = out_data1;
 			if(debug==1) begin
-				$display("%t: c1, response after %0d cycles, %p", $time, i+1, t);
+				$display("response after %0d cycles, %p", i+1, t);
 			end
 			break;
 		end
 	end
 
 endtask
-
-
-
-function automatic void check_trans(ref transaction t);
-
-  
-
-endfunction
 
 task automatic set_expected (ref transaction t);
 
@@ -236,6 +239,8 @@ task automatic set_expected (ref transaction t);
 
 endtask
 
+
+
 task do_reset(inout bit [7:0] reset);	//reset the device
 
 	for (int i=0;i<7;i++) begin	//Hold reset to '1111111'b for seven cycles
@@ -246,6 +251,20 @@ task do_reset(inout bit [7:0] reset);	//reset the device
 	@(posedge c_clk) reset = 7'b0000000;
 	
 endtask
+
+
+
+function automatic void check_trans(ref transaction t);
+
+  if(t.actual_data != t.expected_data) begin
+    error_count = error_count + 1;
+    error_messages.push_back("%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
+      t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+  end else begin
+    success_count = success_count + 1;
+  end
+
+endfunction
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
