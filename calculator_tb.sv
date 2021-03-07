@@ -15,10 +15,7 @@ module calculator_tb;
 
 	//setup transaction queues to store transactions (transactions are tests)
 	transaction response_trans[$];          //response test transactions
-	transaction req1Trans[$];		//transaction queue for request1
-	transaction req2Trans[$];		//transaction queue for request2
-	transaction req3Trans[$];		//transaction queue for request3
-	transaction req4Trans[$];		//transaction queue for request4
+	transaction operation_trans[$];         //tests for basic operations
 	
 	int error_count=0, success_count=0;
         string error_messages[$];
@@ -62,18 +59,18 @@ module calculator_tb;
 initial begin
 
 	$display();	//space seperator for output
-
-	//supposed to be 1.2 needs work
-	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
-	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
-	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
-	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
 	
 	//1.1 response test stimulus
 	response_trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0, "no response test"});
 	response_trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0, "data ready response test"});
 	response_trans.push_back('{32'hFFFFFFFF, 32'h1, 4'h1, 0, 0, 0, 0, "overflow response test"});
 	response_trans.push_back('{32'h22, 32'h23, 4'h2, 0, 0, 0, 0, "underflow response test"});
+	
+	//1.2 basic operation testing on all channels
+	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
+	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
+	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
+	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
 
 
 	if(event_mode) begin	//event_mode test cases (always event mode for now)
@@ -82,9 +79,11 @@ initial begin
 		do_reset(reset);
 		foreach(response_trans[i]) begin
 			set_expected(response_trans[i]);
-			run_trans(response_trans[i],1);      //1 = debug messages enabled
+			run_trans(response_trans[i], 1, 1);  //channel=1, debug messages enabled
 			check_trans(response_trans[i],0);    //mode 0: check response only
 		end
+		
+		//1.2
 
 
 	end else begin	//cycle mode, dunno how this works or if we need to test it
@@ -161,38 +160,131 @@ initial begin
 end
 
 
-/////////////////////////////////////////////////////////////////////////////////////// functions
+/////////////////////////////////////////////////////////////////////////////////////// run transactions
 
-task automatic run_trans(ref transaction t, input integer debug);
+task automatic run_trans(ref transaction t, integer channel, integer debug);
 
-	@(posedge c_clk);
-	cb.req1_data_in <= t.param1;	//written @ edge + 2ns
-	cb.req1_cmd_in <= t.cmd;			//written @ edge + 2ns
+  if(channel == 1) begin
 
-	@(posedge c_clk);
-	cb.req1_data_in <= t.param2;	//written @ edge + 2ns
-	cb.req1_cmd_in <= 2'b00;										//written @ edge + 2ns
+	  @(posedge c_clk);
+	  cb.req1_data_in <= t.param1;	//written @ edge + 2ns
+	  cb.req1_cmd_in <= t.cmd;			//written @ edge + 2ns
+
+	  @(posedge c_clk);
+	  cb.req1_data_in <= t.param2;	//written @ edge + 2ns
+	  cb.req1_cmd_in <= 2'b00;										//written @ edge + 2ns
 		
-	for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
-		@(posedge c_clk);
-		if(i == 4) begin
-			t.actual_resp = out_resp1;
-			t.actual_data = out_data1;
-			if(debug==1) begin
-				$display("no response, %p", t);
-			end
-		end
-		else if (out_resp1 != 0) begin
-			t.actual_resp = out_resp1;
-			t.actual_data = out_data1;
-			if(debug==1) begin
-				$display("response after %0d cycles, %p", i+1, t);
-			end
-			break;
-		end
-	end
+	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		  @(posedge c_clk);
+		  if(i == 4) begin
+		  	t.actual_resp = out_resp1;
+	  		t.actual_data = out_data1;
+	  		if(debug==1) begin
+	  			$display("(1) no response, %p", t);
+	  		end
+		  end
+		  else if (out_resp1 != 0) begin
+			  t.actual_resp = out_resp1;
+			  t.actual_data = out_data1;
+			  if(debug==1) begin
+				  $display("(1) response after %0d cycles, %p", i+1, t);
+			  end
+			  break;
+		  end
+	  end
+	  
+  end else if(channel == 2) begin
+  
+    @(posedge c_clk);
+	  cb.req2_data_in <= t.param1;	//written @ edge + 2ns
+	  cb.req2_cmd_in <= t.cmd;			//written @ edge + 2ns
+
+	  @(posedge c_clk);
+	  cb.req2_data_in <= t.param2;	//written @ edge + 2ns
+	  cb.req2_cmd_in <= 2'b00;										//written @ edge + 2ns
+		
+	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		  @(posedge c_clk);
+		  if(i == 4) begin
+		  	t.actual_resp = out_resp2;
+	  		t.actual_data = out_data2;
+	  		if(debug==1) begin
+	  			$display("(2) no response, %p", t);
+	  		end
+		  end
+		  else if (out_resp1 != 0) begin
+			  t.actual_resp = out_resp2;
+			  t.actual_data = out_data2;
+			  if(debug==1) begin
+				  $display("(2) response after %0d cycles, %p", i+1, t);
+			  end
+			  break;
+		  end
+	  end
+  
+  end else if(channel == 3) begin
+  
+    @(posedge c_clk);
+	  cb.req3_data_in <= t.param1;	//written @ edge + 2ns
+	  cb.req3_cmd_in <= t.cmd;			//written @ edge + 2ns
+
+	  @(posedge c_clk);
+	  cb.req3_data_in <= t.param2;	//written @ edge + 2ns
+	  cb.req3_cmd_in <= 2'b00;										//written @ edge + 2ns
+		
+	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		  @(posedge c_clk);
+		  if(i == 4) begin
+		  	t.actual_resp = out_resp3;
+	  		t.actual_data = out_data3;
+	  		if(debug==1) begin
+	  			$display("(3) no response, %p", t);
+	  		end
+		  end
+		  else if (out_resp1 != 0) begin
+			  t.actual_resp = out_resp3;
+			  t.actual_data = out_data3;
+			  if(debug==1) begin
+				  $display("(3) response after %0d cycles, %p", i+1, t);
+			  end
+			  break;
+		  end
+	  end
+  
+  end else if(channel == 4) begin
+  
+    @(posedge c_clk);
+	  cb.req4_data_in <= t.param1;	//written @ edge + 2ns
+	  cb.req4_cmd_in <= t.cmd;			//written @ edge + 2ns
+
+	  @(posedge c_clk);
+	  cb.req4_data_in <= t.param2;	//written @ edge + 2ns
+	  cb.req4_cmd_in <= 2'b00;										//written @ edge + 2ns
+		
+	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		  @(posedge c_clk);
+		  if(i == 4) begin
+		  	t.actual_resp = out_resp4;
+	  		t.actual_data = out_data4;
+	  		if(debug==1) begin
+	  			$display("(4) no response, %p", t);
+	  		end
+		  end
+		  else if (out_resp1 != 0) begin
+			  t.actual_resp = out_resp4;
+			  t.actual_data = out_data4;
+			  if(debug==1) begin
+				  $display("(4) response after %0d cycles, %p", i+1, t);
+			  end
+			  break;
+		  end
+	  end
+  
+  end
 
 endtask
+
+/////////////////////////////////////////////////////////////////////////////////////// other functions
 
 task automatic set_expected (ref transaction t);
 
