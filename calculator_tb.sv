@@ -20,7 +20,7 @@ module calculator_tb;
 	transaction req3Trans[$];		//transaction queue for request3
 	transaction req4Trans[$];		//transaction queue for request4
 	
-	int errror_count=0, success_count=0;
+	int error_count=0, success_count=0;
   string error_messages[$];
 
 	bit 			c_clk;
@@ -67,7 +67,7 @@ initial begin
 	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
 	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
 	
-	//1.1 test response
+	//1.1 response test stimulus
 	response_trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0, "no response test"});
 	response_trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0, "data ready response test"});
 	response_trans.push_back('{32'hFFFFFFFF, 32'h1, 4'h1, 0, 0, 0, 0, "overflow response test"});
@@ -81,7 +81,7 @@ initial begin
 		foreach(response_trans[i]) begin
 			set_expected(response_trans[i]);
 			run_trans(response_trans[i],1);      //1 = debug messages enabled
-			check_trans(response_trans[i],1);    //mode 1, check response only
+			check_trans(response_trans[i],0);    //mode 0: check response only
 		end
 
 
@@ -202,8 +202,9 @@ task automatic set_expected (ref transaction t);
 	else if(t.cmd==4'b0001) begin	//addition
 		
 		longint result = t.param1 + t.param2;
+		longint max = 4294967295;
 		
-		if( result > 4294967295 ) begin	//overflow
+		if( result > max ) begin	//overflow
 			t.expected_resp = 2'b10;
 		end else begin
 			t.expected_resp = 2'b01;
