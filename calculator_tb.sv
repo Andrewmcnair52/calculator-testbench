@@ -13,6 +13,7 @@ module calculator_tb;
   } transaction;
 
 	//setup transaction queue for each request, see homework 2
+	transaction response_trans[$];	//response test transactions
 	transaction req1Trans[$];		//transaction queue for request1
 	transaction req2Trans[$];		//transaction queue for request2
 	transaction req3Trans[$];		//transaction queue for request3
@@ -58,19 +59,25 @@ module calculator_tb;
 initial begin
 
 	//initialization
-	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0});		//100 + 39 = 139
-	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0});		//5 - 2 = 3
-	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0});		//3 << 2 = 12
-	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0});		//12 >> 2 = 3
+	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0});   //100 + 39 = 139
+	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0});   //5 - 2 = 3
+	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0});   //3 << 2 = 12
+	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0});   //12 >> 2 = 3
+	
+	response_Trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0});              //test no response
+	response_Trans.push_back('{32'h64, 32'h27, 4'h1, 0, 0, 0, 0});              //add regular
+	response_Trans.push_back('{32'hFF0ABCDE, 32'h0F00CDAB, 4'h1, 0, 0, 0, 0})   //add with overflow
+	response_Trans.push_back('{32'hFF0ABCDE, 32'hFFF0CDAB, 4'h2, 0, 0, 0, 0})   //sub with underflow
+	response_Trans.push_back('{32'h27, 32'hFFF0CDAB, 4'h7, 0, 0, 0, 0})          //invalid
 
 
 	if(event_mode) begin	//event_mode test cases
 		
-		//test 1.1
+		//test 1.1 test response
 		do_reset(reset);
-		foreach(req1Trans[i]) begin
+		foreach(response_Trans[i]) begin
 			set_expected(req1Trans[i]);
-			run_trans(req1Trans[i]);      //single channel
+			run_trans(req1Trans[i],1);      //single channel
 		end
 
 
@@ -143,7 +150,7 @@ end
 
 /////////////////////////////////////////////////////////////////////////////////////// run transactions
 
-task automatic run_trans(ref transaction t);
+task automatic run_trans(ref transaction t, int debug);
 
 	@(posedge c_clk);
 	cb.req1_data_in <= t.param1;	//written @ edge + 2ns
@@ -153,17 +160,21 @@ task automatic run_trans(ref transaction t);
 	cb.req1_data_in <= t.param2;	//written @ edge + 2ns
 	cb.req1_cmd_in <= 2'b00;										//written @ edge + 2ns
 		
-	for(int i=0; i<5; i++) begin		//give it 5 cycles to respond
+	for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 		@(posedge c_clk);
 		if(i == 4) begin
 			t.actual_resp = out_resp1;
 			t.actual_data = out_data1;
-			$display("%t: c1, no response, %p", $time, t);
+			if(debug==1) begin
+				$display("%t: c1, no response, %p", $time, t);
+			end
 		end
 		else if (out_resp1 != 0) begin
 			t.actual_resp = out_resp1;
 			t.actual_data = out_data1;
-			$display("%t: c1, response after %0d cycles, %p", $time, i+1, t);
+			if(debug==1) begin
+				$display("%t: c1, response after %0d cycles, %p", $time, i+1, t);
+			end
 			break;
 		end
 	end
@@ -172,6 +183,12 @@ endtask
 
 
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
+
+function void automatic check_trans(ref transaction t);
+
+  
+
+endfunction
 
 task automatic set_expected (ref transaction t);
 
