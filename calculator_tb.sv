@@ -67,20 +67,24 @@ initial begin
 	response_trans.push_back('{32'h22, 32'h23, 4'h2, 0, 0, 0, 0, "underflow response test"});
 	
 	//1.2 basic operation testing on all channels
-	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
-	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
-	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
-	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
+	operation_trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
+	operation_trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
+	operation_trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
+	operation_trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
 
 
 	if(event_mode) begin	//event_mode test cases (always event mode for now)
 		
 		//1.1 test response
 		do_reset(reset);
-		foreach(response_trans[i]) begin
-			set_expected(response_trans[i]);
-			run_trans(response_trans[i], 1, 1);  //channel=1, debug messages enabled
-			check_trans(response_trans[i],0);    //mode 0: check response only
+			
+		for(int j=1; j<5; j++) begin		//for every channel
+			foreach(response_trans[i]) begin	//run each test
+				do_reset(reset);
+				set_expected(response_trans[i]);
+				run_trans(response_trans[i], j, 1);  //channels 1-4, debug messages enabled
+				check_trans(response_trans[i],0);    //mode 0: check response only
+			end
 		end
 		
 		//1.2
@@ -162,7 +166,7 @@ end
 
 /////////////////////////////////////////////////////////////////////////////////////// run transactions
 
-task automatic run_trans(ref transaction t, integer channel, integer debug);
+task automatic run_trans(ref transaction t, input integer channel, input integer debug);
 
   if(channel == 1) begin
 
@@ -176,7 +180,7 @@ task automatic run_trans(ref transaction t, integer channel, integer debug);
 		
 	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 		  @(posedge c_clk);
-		  if(i == 4) begin
+		  if(i == 9) begin
 		  	t.actual_resp = out_resp1;
 	  		t.actual_data = out_data1;
 	  		if(debug==1) begin
@@ -205,14 +209,14 @@ task automatic run_trans(ref transaction t, integer channel, integer debug);
 		
 	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 		  @(posedge c_clk);
-		  if(i == 4) begin
+		  if(i == 9) begin
 		  	t.actual_resp = out_resp2;
 	  		t.actual_data = out_data2;
 	  		if(debug==1) begin
 	  			$display("(2) no response, %p", t);
 	  		end
 		  end
-		  else if (out_resp1 != 0) begin
+		  else if (out_resp2 != 0) begin
 			  t.actual_resp = out_resp2;
 			  t.actual_data = out_data2;
 			  if(debug==1) begin
@@ -234,14 +238,14 @@ task automatic run_trans(ref transaction t, integer channel, integer debug);
 		
 	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 		  @(posedge c_clk);
-		  if(i == 4) begin
+		  if(i == 9) begin
 		  	t.actual_resp = out_resp3;
 	  		t.actual_data = out_data3;
 	  		if(debug==1) begin
 	  			$display("(3) no response, %p", t);
 	  		end
 		  end
-		  else if (out_resp1 != 0) begin
+		  else if (out_resp3 != 0) begin
 			  t.actual_resp = out_resp3;
 			  t.actual_data = out_data3;
 			  if(debug==1) begin
@@ -263,14 +267,14 @@ task automatic run_trans(ref transaction t, integer channel, integer debug);
 		
 	  for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 		  @(posedge c_clk);
-		  if(i == 4) begin
+		  if(i == 9) begin
 		  	t.actual_resp = out_resp4;
 	  		t.actual_data = out_data4;
 	  		if(debug==1) begin
 	  			$display("(4) no response, %p", t);
 	  		end
 		  end
-		  else if (out_resp1 != 0) begin
+		  else if (out_resp4 != 0) begin
 			  t.actual_resp = out_resp4;
 			  t.actual_data = out_data4;
 			  if(debug==1) begin
