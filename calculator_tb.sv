@@ -65,8 +65,8 @@ initial begin
 	
 		//test 1.1
 		do_reset(reset);
-		
-		run_trans1(0);	//single channel
+		set_expected(req1Trans[0]);
+		run_trans1(req1Trans[0]);			//single channel
 		
 	end else begin	//cycle mode
 	
@@ -137,27 +137,27 @@ end
 
 /////////////////////////////////////////////////////////////////////////////////////// run transactions
 
-task run_trans1(input int index);
+task run_trans(ref input transaction t);
 
 	@(posedge c_clk);
-	cb.req1_data_in <= req1Trans[index].param1;	//written @ edge + 2ns
-	cb.req1_cmd_in <= req1Trans[index].cmd;			//written @ edge + 2ns
+	cb.req1_data_in <= t.param1;	//written @ edge + 2ns
+	cb.req1_cmd_in <= t.cmd;			//written @ edge + 2ns
 
 	@(posedge c_clk);
-	cb.req1_data_in <= req1Trans[index].param2;	//written @ edge + 2ns
+	cb.req1_data_in <= t.param2;	//written @ edge + 2ns
 	cb.req1_cmd_in <= 2'b00;										//written @ edge + 2ns
 		
 	for(int i=0; i<5; i++) begin		//give it 5 cycles to respond
 		@(posedge c_clk);
 		if(i == 4) begin
-			req1Trans[index].actual_resp = out_resp1;
-			req1Trans[index].actual_data = out_data1;
-			$display("%t: c1, no response, %p", $time, req1Trans[index]);
+			t.actual_resp = out_resp1;
+			t.actual_data = out_data1;
+			$display("%t: c1, no response, %p", $time, t);
 		end
 		else if (out_resp1 != 0) begin
-			req1Trans[index].actual_resp = out_resp1;
-			req1Trans[index].actual_data = out_data1;
-			$display("%t: c1, response after %0d cycles, %p", $time, i+1, req1Trans[index]);
+			t.actual_resp = out_resp1;
+			t.actual_data = out_data1;
+			$display("%t: c1, response after %0d cycles, %p", $time, i+1, t);
 			break;
 		end
 	end
@@ -167,7 +167,7 @@ endtask
 
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
-function void set_expected (input transaction t);
+function void set_expected (ref input transaction t);
 
 	if(t.cmd==4'b0000) begin				//no response
 			
@@ -196,8 +196,14 @@ function void set_expected (input transaction t);
 	end
 	else if(t.cmd==4'b0101) begin	//shift left
 		
+		t.expected_resp = 2'b01;
+		t.expected_data = t.param1 << t.param2;
+		
 	end
 	else if(t.cmd==4'b0110) begin	//shift right
+		
+		t.expected_resp = 2'b01;
+		t.expected_data = t.param1 >> t.param2;
 		
 	end
 	else if() begin
