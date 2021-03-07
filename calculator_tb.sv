@@ -59,15 +59,21 @@ initial begin
 
 	//initialization
 	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0});		//100 + 39 = 139
+	req1Trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0});		//5 - 2 = 3
+	req1Trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0});		//3 << 2 = 12
+	req1Trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0});		//12 >> 2 = 3
+
 
 	if(event_mode) begin	//event_mode test cases
-	
-	
+		
 		//test 1.1
 		do_reset(reset);
-		set_expected(req1Trans[0]);
-		run_trans1(req1Trans[0]);			//single channel
-		
+		foreach(req1Trans[i]) begin
+			set_expected(req1Trans[i]);
+			run_trans(req1Trans[i]);      //single channel
+		end
+
+
 	end else begin	//cycle mode
 	
 	end
@@ -137,7 +143,7 @@ end
 
 /////////////////////////////////////////////////////////////////////////////////////// run transactions
 
-task run_trans(ref input transaction t);
+task automatic run_trans(ref transaction t);
 
 	@(posedge c_clk);
 	cb.req1_data_in <= t.param1;	//written @ edge + 2ns
@@ -167,7 +173,7 @@ endtask
 
 /////////////////////////////////////////////////////////////////////////////////////// functions that do things
 
-function void set_expected (ref input transaction t);
+task automatic set_expected (ref transaction t);
 
 	if(t.cmd==4'b0000) begin				//no response
 			
@@ -206,9 +212,13 @@ function void set_expected (ref input transaction t);
 		t.expected_data = t.param1 >> t.param2;
 		
 	end
-	else if() begin
+	else  begin
 
-endfunction
+		t.expected_resp = 2'b11;
+
+	end
+
+endtask
 
 task do_reset(inout bit [7:0] reset);	//reset the device
 
