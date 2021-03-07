@@ -256,10 +256,13 @@ endtask
 
 function automatic void check_trans(ref transaction t);
 
+  string tmp_string;
+
   if(t.actual_data != t.expected_data) begin
     error_count = error_count + 1;
-    error_messages.push_back("%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
+    $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h]",
       t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp);
+    error_messages.push_back(tmp_string);
   end else begin
     success_count = success_count + 1;
   end
