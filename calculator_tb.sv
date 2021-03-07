@@ -21,7 +21,7 @@ module calculator_tb;
 	transaction req4Trans[$];		//transaction queue for request4
 	
 	int error_count=0, success_count=0;
-  string error_messages[$];
+        string error_messages[$];
 
 	bit 			c_clk;
 	bit [6:0]		reset;
@@ -60,6 +60,8 @@ module calculator_tb;
 /////////////////////////////////////////////////////////////////////////////////////// testing begins
 
 initial begin
+
+	$display();	//space seperator for output
 
 	//supposed to be 1.2 needs work
 	req1Trans.push_back('{32'h5, 32'h1, 4'h1, 0, 0, 0, 0,"addtion test"});      //100 + 39 = 139
@@ -201,10 +203,7 @@ task automatic set_expected (ref transaction t);
 	end
 	else if(t.cmd==4'b0001) begin	//addition
 		
-		longint result = t.param1 + t.param2;
-		longint max = 4294967295;
-		
-		if( result > max ) begin	//overflow
+		if( t.param1 + t.param2 > 42'hFFFFFFF ) begin	//overflow
 			t.expected_resp = 2'b10;
 		end else begin
 			t.expected_resp = 2'b01;
@@ -214,7 +213,7 @@ task automatic set_expected (ref transaction t);
 	end
 	else if(t.cmd==4'b0010) begin		//subtraction
 	
-		if( (t.param1 < t.param2) begin	//underflow
+		if(t.param1 < t.param2) begin	//underflow
 			t.expected_resp = 2'b10;
 		end else begin
 			t.expected_resp = 2'b01;
