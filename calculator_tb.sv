@@ -414,7 +414,9 @@ task automatic run_trans_concurrent(ref transaction t1, t2, t3, t4, input intege
 	cb.req4_data_in <= t4.param2;
 	cb.req4_cmd_in <= 2'b00;
 		
-	channel_responded[4] = {0,0,0,0};
+	foreach(channel_responded[i]) begin
+	  channel_responded[i] = 0;
+	end
 		
 	for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 	  @(posedge c_clk);
