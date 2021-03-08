@@ -431,25 +431,25 @@ task automatic run_trans_concurrent(ref transaction t1, t2, t3, t4, input intege
 	       t1.actual_resp = out_resp1;
 		     t1.actual_data = out_data1;
 		     if(debug==1) begin
-	         $display("no response on channel 1, %p", t);
+	         $display("no response on channel 1, %p", t1);
 	       end
 	     end else if(channel_responded[1]==0) begin
 	       t2.actual_resp = out_resp2;
 		     t2.actual_data = out_data2;
 		     if(debug==1) begin
-	         $display("no response on channel 2, %p", t);
+	         $display("no response on channel 2, %p", t2);
 	       end
 	     end else if(channel_responded[2]==0) begin
 	       t3.actual_resp = out_resp3;
 		     t3.actual_data = out_data3;
 		     if(debug==1) begin
-	         $display("no response on channel 3, %p", t);
+	         $display("no response on channel 3, %p", t3);
 	       end
 	     end else if(channel_responded[3]==0) begin
 	       t4.actual_resp = out_resp4;
 		     t4.actual_data = out_data4;
 		     if(debug==1) begin
-	         $display("no response on channel 4, %p", t);
+	         $display("no response on channel 4, %p", t4);
 	       end
 	     end
 	     
