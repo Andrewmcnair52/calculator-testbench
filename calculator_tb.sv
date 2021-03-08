@@ -17,6 +17,7 @@ module calculator_tb;
 	transaction response_trans[$];          //response test transactions
 	transaction operation_trans[$];         //tests for basic operations
 	transaction state_trans[$];             //clean state test transactions
+	transaction concurrent_trans[$];        //concurrent operation transactions
 	
 	int random_sequence_queue[$];
 	
@@ -110,7 +111,7 @@ initial begin
 	  
 	  error_messages.push_back("\ntest for 'dirty state' issues\n");
 	  
-	  //2.1.1/2.1.2 test that device state is clean after each operation
+	  //2.1.1 test that device state is clean after each operation
 		
 		//random testing due to too many possible operation pairs
 		for(int i=0; i<80; i++) begin            //generate 80 random operations (20 operations per channel)
@@ -137,6 +138,9 @@ initial begin
 		    run_trans(state_trans[i*j], i, 0);
 		    check_trans(state_trans[i*j], i, 3);     //mode 3: check data and response
 		  end
+		  
+		  do_reset(reset);  //reset when done with each channel
+		  
 		end
     
     //test dirty state generation between channels
@@ -154,8 +158,42 @@ initial begin
 		  check_trans(state_trans[i], random_sequence_queue[i], 3);    //mode 3: check data and response
     end
     
+    do_reset(reset); //reset when done
+    
+    error_messages.push_back("\ntconcurrent operations testing\n");
+    
+    //2.1.2 test concurrent operations
+    //generate 40 random operations
+    for(int i=0; i<40; i++) begin
+      if($urandom_range(1,2) == 1) begin  //select low
+	      if($urandom_range(1,2)==1) begin  //select addition
+		      concurrent_trans.push_back('{$urandom, $urandom, 4'h1, 0, 0, 0, 0,"addtion test"});
+	      end else begin                   //select subtraction
+		      concurrent_trans.push_back('{$urandom, $urandom, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
+		    end
+		  end else begin                      //select high
+		    if($urandom_range(5,6)==5) begin  //select shift left
+          concurrent_trans.push_back('{$urandom, $urandom_range(0,10), 4'h5, 0, 0, 0, 0,"shift left test"});
+	      end else begin                   //select shift right
+		      concurrent_trans.push_back('{$urandom, $urandom_range(0,10), 4'h6, 0, 0, 0, 0,"shift right test"});
+		    end
+		  end
+    end
+    
+    foreach(concurrent_trans[i]) begin    //set expected on its own loop, since we're running 4 transactions ar a time
+      set_expected(concurrent_trans[i]);
+    end
+    
+    for(int i=0; i<40; i = i+4) begin //run 10 tests with an operation on each channel
+		  run_trans_concurrent(concurrent_trans[i], concurrent_trans[i+1], concurrent_trans[i+2], concurrent_trans[i+3], 1);
+    end
+    
+    foreach(concurrent_trans[i]) begin    //check transactions in its own loop, since we're running 4 transactions ar a time
+      check_trans(concurrent_trans[i]);
+    end
+    
 
-	end else begin	//cycle mode, dunno how this works or if we need to test it
+	end else begin	//cycle mode, its not specified how this works or if we need to test it
 	
 	end
 
@@ -350,6 +388,94 @@ task automatic run_trans(ref transaction t, input integer channel, input integer
 	  end
   
   end 
+
+endtask
+
+task automatic run_trans_concurrent(ref inout transaction t1, t2, t3, t4, input integer debug);
+
+  @(posedge c_clk);
+	cb.req1_data_in <= t1.param1;
+	cb.req1_cmd_in <= t1.cmd;
+	cb.req2_data_in <= t2.param1;
+	cb.req2_cmd_in <= t2.cmd;
+	cb.req3_data_in <= t3.param1;
+	cb.req3_cmd_in <= t3.cmd;
+	cb.req4_data_in <= t4.param1;
+	cb.req4_cmd_in <= t4.cmd;
+
+	@(posedge c_clk);
+	cb.req1_data_in <= t1.param2;
+	cb.req1_cmd_in <= 2'b00;
+	cb.req2_data_in <= t2.param2;
+	cb.req2_cmd_in <= 2'b00;
+	cb.req3_data_in <= t3.param2;
+	cb.req3_cmd_in <= 2'b00;
+	cb.req4_data_in <= t4.param2;
+	cb.req4_cmd_in <= 2'b00;
+		
+	int channel_responded[4] = {0,0,0,0};
+		
+	for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+	  @(posedge c_clk);
+	  if(i == 9) begin
+	  
+	     if(channel_responded[0]==0) begin
+	       t1.actual_resp = out_resp1;
+		     t1.actual_data = out_data1;
+		     if(debug==1) begin
+	         $display("no response on channel 1, %p", t);
+	       end
+	     end else if(channel_responded[1]==0) begin
+	       t2.actual_resp = out_resp2;
+		     t2.actual_data = out_data2;
+		     if(debug==1) begin
+	         $display("no response on channel 2, %p", t);
+	       end
+	     end else if(channel_responded[2]==0) begin
+	       t3.actual_resp = out_resp3;
+		     t3.actual_data = out_data3;
+		     if(debug==1) begin
+	         $display("no response on channel 3, %p", t);
+	       end
+	     end else if(channel_responded[3]==0) begin
+	       t4.actual_resp = out_resp4;
+		     t4.actual_data = out_data4;
+		     if(debug==1) begin
+	         $display("no response on channel 4, %p", t);
+	       end
+	     end
+	     
+	  end else if (out_resp1 != 0) begin
+	    t1.actual_resp = out_resp1;
+		  t1.actual_data = out_data1;
+		  if(debug==1) begin
+		    $display("channel 1 response after %0d cycles, %p", i+1, t);
+		  end
+	  end else if (out_resp2 != 0) begin
+	    t2.actual_resp = out_resp2;
+		  t2.actual_data = out_data2;
+		  if(debug==1) begin
+		    $display("channel 2 response after %0d cycles, %p", i+1, t);
+		  end
+	  end else if (out_resp3 != 0) begin
+	    t3.actual_resp = out_resp3;
+		  t3.actual_data = out_data3;
+		  if(debug==1) begin
+		    $display("channel 3 response after %0d cycles, %p", i+1, t);
+		  end
+	  end else if (out_resp4 != 0) begin
+	    t4.actual_resp = out_resp4;
+		  t4.actual_data = out_data4;
+		  if(debug==1) begin
+		    $display("channel 4 response after %0d cycles, %p", i+1, t);
+		  end	  
+	  end
+	  
+	  if(channel_responded[0]&&channel_responded[1]&&channel_responded[2]&&channel_responded[3]) begin
+		  i=10; //if every channel has responded, break loop
+	  end
+	  
+  end
 
 endtask
 
