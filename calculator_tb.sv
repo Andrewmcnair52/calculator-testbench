@@ -63,7 +63,7 @@ module calculator_tb;
 
 initial begin
 
-	$display();	//space seperator for output
+	$display("\n");	//space seperator for output
 	
 	//1.1 response test stimulus
 	response_trans.push_back('{32'h64, 32'h27, 4'h0, 0, 0, 0, 0, "no response test"});
@@ -80,7 +80,7 @@ initial begin
 
 	if(event_mode) begin	//event_mode test cases (always event mode for now)
 		
-		error_messages.push_back("\ntest responses\n");
+		error_messages.push_back("\n1.1 and 1.3: test responses\n");
 		
 		//1.1 and 1.3 test response
 		do_reset(reset);
@@ -96,7 +96,7 @@ initial begin
 			
 		end
 		
-		error_messages.push_back("\nbasic operations testing\n");
+		error_messages.push_back("\n1.2: basic operations testing\n");
 		
 		//1.2 operations testing for each channel
 		for(int j=1; j<5; j++) begin		//for every channel
@@ -110,7 +110,7 @@ initial begin
 		  
 	  end
 	  
-	  error_messages.push_back("\ntest for 'dirty state' issues\n");
+	  error_messages.push_back("\n2.1.1: test for 'dirty state' issues\n");
 	  
 	  //2.1.1 test that device state is clean after each operation
 		
@@ -161,7 +161,7 @@ initial begin
     
     do_reset(reset); //reset when done
     
-    error_messages.push_back("\ntconcurrent operations testing\n");
+    error_messages.push_back("\n2.1.2: concurrent operations testing\n");
     
     //2.1.2 test concurrent operations
     //generate 40 random operations
@@ -186,7 +186,7 @@ initial begin
     end
     
     for(int i=0; i<40; i = i+4) begin //run 10 tests with an operation on each channel
-		  run_trans_concurrent(concurrent_trans[i], concurrent_trans[i+1], concurrent_trans[i+2], concurrent_trans[i+3], 1);
+		  run_trans_concurrent(concurrent_trans[i], concurrent_trans[i+1], concurrent_trans[i+2], concurrent_trans[i+3], 0);
     end
     
     for(int i=0, c=1; i<concurrent_trans.size(); i++) begin    //check transactions in its own loop, since we're running 4 transactions at a time
@@ -197,6 +197,13 @@ initial begin
         c = c + 1;
       end
     end
+    
+    do_reset(reset); //reset when done
+    error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
+    
+    //2.3 check that only the lower 5 bits of the second shift operand is used
+    
+    
     
 
 	end else begin	//cycle mode, its not specified how this works or if we need to test it
