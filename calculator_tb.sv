@@ -391,7 +391,7 @@ task automatic run_trans(ref transaction t, input integer channel, input integer
 
 endtask
 
-task automatic run_trans_concurrent(ref inout transaction t1, t2, t3, t4, input integer debug);
+task automatic run_trans_concurrent(ref transaction t1, t2, t3, t4, input integer debug);
 
   @(posedge c_clk);
 	cb.req1_data_in <= t1.param1;
