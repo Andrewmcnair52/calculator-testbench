@@ -117,7 +117,7 @@ initial begin
 		    //select random operation
 		    if($urandom_range(1,2) == 1) begin  //select low
 		      if($urandom_range(1,2)==1) begin  //select addition
-		        state_trans.push_back('{$urandom $urandom, 4'h1, 0, 0, 0, 0,"addtion test"});
+		        state_trans.push_back('{$urandom, $urandom, 4'h1, 0, 0, 0, 0,"addtion test"});
 		       end else begin                   //select subtraction
 		        state_trans.push_back('{$urandom, $urandom, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
 		       end
