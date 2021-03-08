@@ -16,8 +16,7 @@ module calculator_tb;
 	//setup transaction queues to store transactions (transactions are tests)
 	transaction response_trans[$];          //response test transactions
 	transaction operation_trans[$];         //tests for basic operations
-	
-	int sequence_queue[$];
+	transaction state_trans[$];             //clean state test transactions
 	
 	int error_count=0, success_count=0;
   string error_messages[$];
@@ -118,15 +117,15 @@ initial begin
 		    //select random operation
 		    if($urandom_range(1,2) == 1) begin  //select low
 		      if($urandom_range(1,2)==1) begin  //select addition
-		        state_trans.push_back('{$urandom%4294967295, $urandom%4294967295, 4'h1, 0, 0, 0, 0,"addtion test"});  //set max value to prevent overflow
+		        state_trans.push_back('{$urandom $urandom, 4'h1, 0, 0, 0, 0,"addtion test"});
 		       end else begin                   //select subtraction
-		        state_trans.push_back('{$urandom_range(294967295,4294967295), $urandom%4294967295, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
+		        state_trans.push_back('{$urandom, $urandom, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
 		       end
 		    end else begin                      //select high
 		      if($urandom_range(5,6)==5) begin  //select shift left
-		        state_trans.push_back('{$urandom, $urandom_range(0,5), 4'h5, 0, 0, 0, 0,"shift left test"});
+		        state_trans.push_back('{$urandom, $urandom_range(0,10), 4'h5, 0, 0, 0, 0,"shift left test"});
 		       end else begin                   //select shift right
-		        state_trans.push_back('{$urandom, $urandom_range(0,5), 4'h6, 0, 0, 0, 0,"shift right test"});
+		        state_trans.push_back('{$urandom, $urandom_range(0,10), 4'h6, 0, 0, 0, 0,"shift right test"});
 		       end
 		    end
 		  end
