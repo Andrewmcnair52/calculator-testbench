@@ -18,6 +18,8 @@ module calculator_tb;
 	transaction operation_trans[$];         //tests for basic operations
 	transaction state_trans[$];             //clean state test transactions
 	
+	int random_sequence_queue[$];
+	
 	int error_count=0, success_count=0;
   string error_messages[$];
 
@@ -112,28 +114,35 @@ initial begin
 		
 		//test interference between channels
 		//will do this randomly due to too many possibilities
-		for(int i=1; i<5; i++) begin            //for each channel
-		  for(int j=0; j<10; j++) begin         //each channel runs 20 operations
-		    //select random operation
-		    if($urandom_range(1,2) == 1) begin  //select low
-		      if($urandom_range(1,2)==1) begin  //select addition
-		        state_trans.push_back('{$urandom, $urandom, 4'h1, 0, 0, 0, 0,"addtion test"});
-		       end else begin                   //select subtraction
-		        state_trans.push_back('{$urandom, $urandom, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
-		       end
-		    end else begin                      //select high
-		      if($urandom_range(5,6)==5) begin  //select shift left
-		        state_trans.push_back('{$urandom, $urandom_range(0,10), 4'h5, 0, 0, 0, 0,"shift left test"});
-		       end else begin                   //select shift right
-		        state_trans.push_back('{$urandom, $urandom_range(0,10), 4'h6, 0, 0, 0, 0,"shift right test"});
-		       end
+		for(int i=0; i<80; i++) begin            //generate 80 operations (20 operations per channel)
+		  //select random operation
+      if($urandom_range(1,2) == 1) begin  //select low
+	      if($urandom_range(1,2)==1) begin  //select addition
+		      state_trans.push_back('{$urandom, $urandom, 4'h1, 0, 0, 0, 0,"addtion test"});
+	      end else begin                   //select subtraction
+		      state_trans.push_back('{$urandom, $urandom, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
+		    end
+		  end else begin                      //select high
+		    if($urandom_range(5,6)==5) begin  //select shift left
+          state_trans.push_back('{$urandom, $urandom_range(0,10), 4'h5, 0, 0, 0, 0,"shift left test"});
+	      end else begin                   //select shift right
+		      state_trans.push_back('{$urandom, $urandom_range(0,10), 4'h6, 0, 0, 0, 0,"shift right test"});
 		    end
 		  end
     end
-    state_trans.shuffle(); //randomize order
     
-    foreach(state_trans[i]) begin
-      $display(" %0d %p", $urandom_range(1,2), state_trans[i]);
+    for(int i=1; i<5; i++) begin          //for each channel
+      for(int j=0; j<20; j++) begin       //allocate 20 operations
+        random_sequence_queue.push_back(i);
+      end
+    end
+    random_sequence_queue.shuffle();      //randomize order
+    
+    //run tests
+    for(int i=0; i<state_trans.size(); i++) begin
+      set_expected(state_trans[i]);
+		  run_trans(state_trans[i], random_sequence_queue[i], 0);      //debug on
+		  check_trans(state_trans[i], random_sequence_queue[i], 3);    //mode 3: check data and response
     end
     
 
