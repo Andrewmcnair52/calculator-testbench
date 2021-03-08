@@ -189,8 +189,13 @@ initial begin
 		  run_trans_concurrent(concurrent_trans[i], concurrent_trans[i+1], concurrent_trans[i+2], concurrent_trans[i+3], 1);
     end
     
-    foreach(concurrent_trans[i]) begin    //check transactions in its own loop, since we're running 4 transactions ar a time
-      check_trans(concurrent_trans[i]);
+    for(int i=0, c=1; i<concurrent_trans.size(); i++) begin    //check transactions in its own loop, since we're running 4 transactions at a time
+      check_trans(concurrent_trans[i], c,3);
+      if(c==4) begin  //reset channel counter if 4
+        c = 1;
+      end else begin  //else increment channel counter
+        c = c + 1;
+      end
     end
     
 
