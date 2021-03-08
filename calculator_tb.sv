@@ -133,7 +133,7 @@ initial begin
     state_trans.shuffle(); //randomize order
     
     foreach(state_trans[i]) begin
-      $display("%p", state_trans[i]);
+      $display(" %0d %p", $urandom_range(1,2), state_trans[i]);
     end
     
 
