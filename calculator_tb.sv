@@ -457,28 +457,28 @@ task automatic run_trans_concurrent(ref transaction t1, t2, t3, t4, input intege
 	    t1.actual_resp = out_resp1;
 		  t1.actual_data = out_data1;
 		  if(debug==1) begin
-		    $display("channel 1 response after %0d cycles, %p", i+1, t);
+		    $display("channel 1 response after %0d cycles, %p", i+1, t1);
 		  end
 		  channel_responded[0] = 1;
 	  end else if (out_resp2 != 0) begin
 	    t2.actual_resp = out_resp2;
 		  t2.actual_data = out_data2;
 		  if(debug==1) begin
-		    $display("channel 2 response after %0d cycles, %p", i+1, t);
+		    $display("channel 2 response after %0d cycles, %p", i+1, t2);
 		  end
 		  channel_responded[1] = 1;
 	  end else if (out_resp3 != 0) begin
 	    t3.actual_resp = out_resp3;
 		  t3.actual_data = out_data3;
 		  if(debug==1) begin
-		    $display("channel 3 response after %0d cycles, %p", i+1, t);
+		    $display("channel 3 response after %0d cycles, %p", i+1, t3);
 		  end
 		  channel_responded[2] = 1;
 	  end else if (out_resp4 != 0) begin
 	    t4.actual_resp = out_resp4;
 		  t4.actual_data = out_data4;
 		  if(debug==1) begin
-		    $display("channel 4 response after %0d cycles, %p", i+1, t);
+		    $display("channel 4 response after %0d cycles, %p", i+1, t4);
 		  end
 		  channel_responded[3] = 1; 
 	  end
