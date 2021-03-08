@@ -17,6 +17,8 @@ module calculator_tb;
 	transaction response_trans[$];          //response test transactions
 	transaction operation_trans[$];         //tests for basic operations
 	
+	int sequence_queue[$];
+	
 	int error_count=0, success_count=0;
   string error_messages[$];
 
@@ -75,6 +77,8 @@ initial begin
 
 	if(event_mode) begin	//event_mode test cases (always event mode for now)
 		
+		error_messages.push_back("\ntest responses\n");
+		
 		//1.1 and 1.3 test response
 		do_reset(reset);
 			
@@ -89,13 +93,13 @@ initial begin
 			
 		end
 		
-		error_messages.push_back(""); //keep error message log legible with seperators
+		error_messages.push_back("\nbasic operations testing\n");
 		
 		//1.2 operations testing for each channel
 		for(int j=1; j<5; j++) begin		//for every channel
 		  foreach(operation_trans[i]) begin
 		   set_expected(operation_trans[i]);
-		   run_trans(operation_trans[i], j, 1);      //debug on
+		   run_trans(operation_trans[i], j, 0);      //debug on
 		   check_trans(operation_trans[i], j, 3);    //mode 3: check data and response
 		  end
 		
@@ -103,10 +107,36 @@ initial begin
 		  
 	  end
 	  
-	  //1.4
+	  error_messages.push_back("\ntest for 'dirty state' issues\n");
+	  
+	  //2.1.1/2.1.2 test that device state is clean after each operation
 		
-		
-
+		//test interference between channels
+		//will do this randomly due to too many possibilities
+		for(int i=1; i<5; i++) begin            //for each channel
+		  for(int j=0; j<10; j++) begin         //each channel runs 20 operations
+		    //select random operation
+		    if($urandom_range(1,2) == 1) begin  //select low
+		      if($urandom_range(1,2)==1) begin  //select addition
+		        state_trans.push_back('{$urandom%4294967295, $urandom%4294967295, 4'h1, 0, 0, 0, 0,"addtion test"});  //set max value to prevent overflow
+		       end else begin                   //select subtraction
+		        state_trans.push_back('{$urandom_range(294967295,4294967295), $urandom%4294967295, 4'h2, 0, 0, 0, 0,"subtraction test"});  //set values to prevent underflow
+		       end
+		    end else begin                      //select high
+		      if($urandom_range(5,6)==5) begin  //select shift left
+		        state_trans.push_back('{$urandom, $urandom_range(0,5), 4'h5, 0, 0, 0, 0,"shift left test"});
+		       end else begin                   //select shift right
+		        state_trans.push_back('{$urandom, $urandom_range(0,5), 4'h6, 0, 0, 0, 0,"shift right test"});
+		       end
+		    end
+		  end
+    end
+    state_trans.shuffle(); //randomize order
+    
+    foreach(state_trans[i]) begin
+      $display("%p", state_trans[i]);
+    end
+    
 
 	end else begin	//cycle mode, dunno how this works or if we need to test it
 	
