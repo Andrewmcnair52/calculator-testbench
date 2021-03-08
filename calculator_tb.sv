@@ -355,7 +355,7 @@ task automatic set_expected (ref transaction t);
 	end
 	else if(t.cmd==4'b0001) begin	//addition
 		
-		if( t.param1 + t.param2 > 42'hFFFFFFF ) begin	//overflow
+		if( t.param1 + t.param2 > 32'hFFFFFFFF ) begin	//overflow
 			t.expected_resp = 2'b10;
 		end else begin
 			t.expected_resp = 2'b01;
