@@ -112,9 +112,8 @@ initial begin
 	  
 	  //2.1.1/2.1.2 test that device state is clean after each operation
 		
-		//test interference between channels
-		//will do this randomly due to too many possibilities
-		for(int i=0; i<80; i++) begin            //generate 80 operations (20 operations per channel)
+		//random testing due to too many possible operation pairs
+		for(int i=0; i<80; i++) begin            //generate 80 random operations (20 operations per channel)
 		  //select random operation
       if($urandom_range(1,2) == 1) begin  //select low
 	      if($urandom_range(1,2)==1) begin  //select addition
@@ -131,6 +130,16 @@ initial begin
 		  end
     end
     
+    //test dirty state generation on each channel
+    for(int i=1; i<5; i++) begin          //for each channel
+		  for(int j=0; j<20; j++)  begin      //20 operations per channel
+		    set_expected(state_trans[i*j]);
+		    run_trans(state_trans[i*j], i, 0);
+		    check_trans(state_trans[i*j], i, 3);     //mode 3: check data and response
+		  end
+		end
+    
+    //test dirty state generation between channels
     for(int i=1; i<5; i++) begin          //for each channel
       for(int j=0; j<20; j++) begin       //allocate 20 operations
         random_sequence_queue.push_back(i);
@@ -141,7 +150,7 @@ initial begin
     //run tests
     for(int i=0; i<state_trans.size(); i++) begin
       set_expected(state_trans[i]);
-		  run_trans(state_trans[i], random_sequence_queue[i], 0);      //debug on
+		  run_trans(state_trans[i], random_sequence_queue[i], 0);
 		  check_trans(state_trans[i], random_sequence_queue[i], 3);    //mode 3: check data and response
     end
     
