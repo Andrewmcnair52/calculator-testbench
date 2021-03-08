@@ -21,6 +21,7 @@ module calculator_tb;
 	
 	int random_sequence_queue[$];
 	
+	int channel_responded[4];
 	int error_count=0, success_count=0;
   string error_messages[$];
 
@@ -413,7 +414,7 @@ task automatic run_trans_concurrent(ref transaction t1, t2, t3, t4, input intege
 	cb.req4_data_in <= t4.param2;
 	cb.req4_cmd_in <= 2'b00;
 		
-	int channel_responded[4] = {0,0,0,0};
+	channel_responded[4] = {0,0,0,0};
 		
 	for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
 	  @(posedge c_clk);
@@ -451,24 +452,28 @@ task automatic run_trans_concurrent(ref transaction t1, t2, t3, t4, input intege
 		  if(debug==1) begin
 		    $display("channel 1 response after %0d cycles, %p", i+1, t);
 		  end
+		  channel_responded[0] = 1;
 	  end else if (out_resp2 != 0) begin
 	    t2.actual_resp = out_resp2;
 		  t2.actual_data = out_data2;
 		  if(debug==1) begin
 		    $display("channel 2 response after %0d cycles, %p", i+1, t);
 		  end
+		  channel_responded[1] = 1;
 	  end else if (out_resp3 != 0) begin
 	    t3.actual_resp = out_resp3;
 		  t3.actual_data = out_data3;
 		  if(debug==1) begin
 		    $display("channel 3 response after %0d cycles, %p", i+1, t);
 		  end
+		  channel_responded[2] = 1;
 	  end else if (out_resp4 != 0) begin
 	    t4.actual_resp = out_resp4;
 		  t4.actual_data = out_data4;
 		  if(debug==1) begin
 		    $display("channel 4 response after %0d cycles, %p", i+1, t);
-		  end	  
+		  end
+		  channel_responded[3] = 1; 
 	  end
 	  
 	  if(channel_responded[0]&&channel_responded[1]&&channel_responded[2]&&channel_responded[3]) begin
