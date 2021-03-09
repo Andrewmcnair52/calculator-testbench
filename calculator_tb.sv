@@ -241,7 +241,7 @@ initial begin
 	      cb.req4_data_in <= concurrent_trans[4].param2;
 	      cb.req4_cmd_in <= 2'b00;
 		  
-	      for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+	      for(int j=0; j<10; j++) begin		//give it 10 cycles to respond
 	       @(posedge c_clk);
 	       if (out_resp1 != 0) begin
 	          port_priority_count[0] = port_priority_count[0] + 1;
@@ -311,7 +311,7 @@ initial begin
     for(int i=1; i<5; i++) begin
       foreach(corner_cases[j]) begin
         set_expected(corner_cases[j]);
-		    run_trans(corner_cases[j], i, 1);
+		    run_trans(corner_cases[j], i, 0);
 		    check_trans(corner_cases[j], i, 3);    //mode 3: check data and response
       end
     end
