@@ -218,15 +218,15 @@ initial begin
     corner_cases.push_back('{32'hADD267E4, 32'hADD267E4, 4'h2, 0, 0, 0, 0, "subtract equal"});
     
     //corner cases 2.4.4: subtract a number that underflows by 1
-    corner_cases.push_back('{32'hC4437B62, 32'h3BBC849E, 4'h2, 0, 0, 0, 0, "underflow by 1"});
+    corner_cases.push_back('{32'hC4437B62, 32'hC4437B63, 4'h2, 0, 0, 0, 0, "underflow by 1"});
     
     //corner cases 2.4.5: shift left/right zero places
     corner_cases.push_back('{32'hC4437B62, 32'h0, 4'h5, 0, 0, 0, 0, "shift left 0 places"});
     corner_cases.push_back('{32'hC4437B62, 32'h0, 4'h6, 0, 0, 0, 0, "shift right 0 places"});
     
     //corner cases 2.4.6: shift left/right 31 places
-    corner_cases.push_back('{32'hC4437B62, 32'h31, 4'h5, 0, 0, 0, 0, "shift left 0 places"});
-    corner_cases.push_back('{32'hC4437B62, 32'h31, 4'h6, 0, 0, 0, 0, "shift right 0 places"});
+    corner_cases.push_back('{32'hC4437B62, 32'h1F, 4'h5, 0, 0, 0, 0, "shift left 31 places"});
+    corner_cases.push_back('{32'hC4437B62, 32'h1F, 4'h6, 0, 0, 0, 0, "shift right 31 places"});
     
     //corner cases 2.5: check that data is ignored when its supposed to be
     
@@ -566,7 +566,7 @@ task automatic set_expected (ref transaction t);
 		end
 	
 	end
-	else if(t.cmd==4'b0101) begin	//shift left
+	else if(t.cmd==4'h0101) begin	//shift left
 		
 		t.expected_resp = 2'b01;
 		t.expected_data = t.param1 << t.param2;
