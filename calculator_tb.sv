@@ -19,10 +19,13 @@ module calculator_tb;
 	transaction state_trans[$];             //clean state test transactions
 	transaction concurrent_trans[$];        //concurrent operation transactions
 	transaction corner_cases[$];            //corner cases tests
+	transaction port_priority[$];           //test for port priority
 	
 	int random_sequence_queue[$];
 	
 	int channel_responded[4];
+	int port_priority_count[4];
+	
 	int error_count=0, success_count=0;
   string error_messages[$];
 
@@ -77,7 +80,6 @@ initial begin
 	operation_trans.push_back('{32'h5, 32'h2, 4'h2, 0, 0, 0, 0,"subtraction test"});  //5 - 2 = 3
 	operation_trans.push_back('{32'h3, 32'h2, 4'h5, 0, 0, 0, 0,"shift left test"});   //3 << 2 = 12
 	operation_trans.push_back('{32'hc, 32'h2, 4'h6, 0, 0, 0, 0,"shift right test"});  //12 >> 2 = 3
-
 
 	if(event_mode) begin	//event_mode test cases (always event mode for now)
 		
@@ -182,7 +184,7 @@ initial begin
 		  end
     end
     
-    foreach(concurrent_trans[i]) begin    //set expected on its own loop, since we're running 4 transactions ar a time
+    foreach(concurrent_trans[i]) begin    //set expected on its own loop, since we're running 4 transactions at a time
       set_expected(concurrent_trans[i]);
     end
     
@@ -202,7 +204,70 @@ initial begin
     do_reset(reset); //reset when done
     error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
     
+    //2.2 port priority
+    for(int i=0; i<100; i++) begin
+    
+      //save 4 operations
+      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+    
+      foreach(concurrent_trans[i]) begin    //set expected on its own loop, since we're running 4 transactions at a time
+        set_expected(concurrent_trans[i]);
+      end
+    
+      for(int i=0; i<40; i = i+4) begin //run 10 tests with an operation on each channel
+		    run_trans_concurrent(concurrent_trans[0], concurrent_trans[1], concurrent_trans[2], concurrent_trans[3], 0);
+		   
+		    @(posedge c_clk);
+	      cb.req1_data_in <= concurrent_trans[1].param1;
+	      cb.req1_cmd_in <= concurrent_trans[1].cmd;
+	      cb.req2_data_in <= concurrent_trans[2].param1;
+	      cb.req2_cmd_in <= concurrent_trans[2].cmd;
+	      cb.req3_data_in <= concurrent_trans[3].param1;
+	      cb.req3_cmd_in <= concurrent_trans[3].cmd;
+	      cb.req4_data_in <= concurrent_trans[4].param1;
+	      cb.req4_cmd_in <= concurrent_trans[4].cmd;
+
+	      @(posedge c_clk);
+	      cb.req1_data_in <= concurrent_trans[1].param2;
+	      cb.req1_cmd_in <= 2'b00;
+	      cb.req2_data_in <= concurrent_trans[2].param2;
+	      cb.req2_cmd_in <= 2'b00;
+	      cb.req3_data_in <= concurrent_trans[3].param2;
+	      cb.req3_cmd_in <= 2'b00;
+	      cb.req4_data_in <= concurrent_trans[4].param2;
+	      cb.req4_cmd_in <= 2'b00;
+		  
+	      for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+	       @(posedge c_clk);
+	       if (out_resp1 != 0) begin
+	          port_priority_count[0] = port_priority_count[0] + 1;
+	        end else if (out_resp2 != 0) begin
+	          port_priority_count[1] = port_priority_count[1] + 1;
+	        end else if (out_resp3 != 0) begin
+	          port_priority_count[2] = port_priority_count[2] + 1;
+	        end else if (out_resp4 != 0) begin
+	          port_priority_count[3] = port_priority_count[3] + 1;
+	        end
+        end
+		   
+      end
+    
+    end
+    
+    error_messages.push_back("\nport priority test\n");
+    error_messages.push_back("channel 1 responded first %0d times", port_priority_count[0]);
+    error_messages.push_back("channel 2 responded first %0d times", port_priority_count[1]);
+    error_messages.push_back("channel 3 responded first %0d times", port_priority_count[2]);
+    error_messages.push_back("channel 4 responded first %0d times", port_priority_count[3]);
+    
+    
     //2.3 check that only the lower 5 bits of the second shift operand is used
+    
+    
+    
     
     
     do_reset(reset);
