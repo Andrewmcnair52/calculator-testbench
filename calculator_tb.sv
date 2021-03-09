@@ -262,11 +262,11 @@ initial begin
     $sformat(tmp_string, "channel 1 responded first %0d times", port_priority_count[0]);
     error_messages.push_back(tmp_string);
     $sformat(tmp_string, "channel 2 responded first %0d times", port_priority_count[1]);
-    error_messages.push_back(tmp_string)
+    error_messages.push_back(tmp_string);
     $sformat(tmp_string, "channel 3 responded first %0d times", port_priority_count[2]);
-    error_messages.push_back(tmp_string)
+    error_messages.push_back(tmp_string);
     $sformat(tmp_string, "channel 4 responded first %0d times", port_priority_count[3]);
-    error_messages.push_back(tmp_string)
+    error_messages.push_back(tmp_string);
     
     
     //2.3 check that only the lower 5 bits of the second shift operand is used
