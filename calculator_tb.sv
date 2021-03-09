@@ -117,8 +117,24 @@ initial begin
 	  error_messages.push_back("\n2.1.1: test for 'dirty state' issues\n");
 	  
 	  //2.1.1 test that device state is clean after each operation
+	  //direct testing
+		state_trans.push_back('{32'hFF236, 32'h5CCAB2, 4'h1, 0, 0, 0, 0,"addtion test"});
+		state_trans.push_back('{32'h11111111, 32'h212134, 4'h1, 0, 0, 0, 0,"addtion test"});
+		state_trans.push_back('{32'h1A618A23, 32'hCE456712, 4'h1, 0, 0, 0, 0,"addtion test"});
 		
-		//random testing due to too many possible operation pairs
+		state_trans.push_back('{32'hFFFF236, 32'h5CCAB2, 4'h2, 0, 0, 0, 0,"subtraction test"});
+		state_trans.push_back('{32'h11111111, 32'h212134, 4'h2, 0, 0, 0, 0,"subtraction test"});
+		state_trans.push_back('{32'hFA618A23, 32'hCE456712, 4'h2, 0, 0, 0, 0,"subtraction test"});
+		
+		state_trans.push_back('{32'hFFFF236, 32'h11, 4'h5, 0, 0, 0, 0,"shift left test"});
+		state_trans.push_back('{32'h11111111, 32'h8, 4'h5, 0, 0, 0, 0,"shift left test"});
+		state_trans.push_back('{32'hFA618A23, 32'h10, 4'h5, 0, 0, 0, 0,"shift left test"});
+		
+		state_trans.push_back('{32'hFFFF236, 32'h11, 4'h6, 0, 0, 0, 0,"shift right test"});
+		state_trans.push_back('{32'h11111111, 32'h8, 4'h6, 0, 0, 0, 0,"shift right test"});
+		state_trans.push_back('{32'hFA618A23, 32'hCE456712, 4'h6, 0, 0, 0, 0,"shift right test"});
+		//random testing not allowed
+		/*
 		for(int i=0; i<80; i++) begin            //generate 80 random operations (20 operations per channel)
 		  //select random operation
       if($urandom_range(1,2) == 1) begin  //select low
@@ -135,13 +151,14 @@ initial begin
 		    end
 		  end
     end
+    */
     
     //test dirty state generation on each channel
     for(int i=1; i<5; i++) begin          //for each channel
-		  for(int j=0; j<20; j++)  begin      //20 operations per channel
-		    set_expected(state_trans[i*j]);
-		    run_trans(state_trans[i*j], i, 0);
-		    check_trans(state_trans[i*j], i, 3);     //mode 3: check data and response
+		  foreach(state_trans[j])  begin      //run operations sequentially
+		    set_expected(state_trans[j]);
+		    run_trans(state_trans[j], i, 0);
+		    check_trans(state_trans[j], i, 3);     //mode 3: check data and response
 		  end
 		  
 		  do_reset(reset);  //reset when done with each channel
@@ -150,7 +167,7 @@ initial begin
     
     //test dirty state generation between channels
     for(int i=1; i<5; i++) begin          //for each channel
-      for(int j=0; j<20; j++) begin       //allocate 20 operations
+      for(int j=0; j<3; j++) begin       //allocate 3 operations
         random_sequence_queue.push_back(i);
       end
     end
@@ -168,7 +185,27 @@ initial begin
     error_messages.push_back("\n2.1.2: concurrent operations testing\n");
     
     //2.1.2 test concurrent operations
+    
+    //direct testing
+    for(int i=0; i<3; i++) begin  //generates 36 transactions
+		  concurrent_trans.push_back('{32'hFF236, 32'h5CCAB2, 4'h1, 0, 0, 0, 0,"addtion test"});
+		  concurrent_trans.push_back('{32'h11111111, 32'h212134, 4'h1, 0, 0, 0, 0,"addtion test"});
+		  concurrent_trans.push_back('{32'h1A618A23, 32'hCE456712, 4'h1, 0, 0, 0, 0,"addtion test"});
+		  
+		  concurrent_trans.push_back('{32'hFFFF236, 32'h5CCAB2, 4'h2, 0, 0, 0, 0,"subtraction test"});
+		  concurrent_trans.push_back('{32'h11111111, 32'h212134, 4'h2, 0, 0, 0, 0,"subtraction test"});
+		  concurrent_trans.push_back('{32'hFA618A23, 32'hCE456712, 4'h2, 0, 0, 0, 0,"subtraction test"});
+		  
+		  concurrent_trans.push_back('{32'hFFFF236, 32'h11, 4'h5, 0, 0, 0, 0,"shift left test"});
+		  concurrent_trans.push_back('{32'h11111111, 32'h8, 4'h5, 0, 0, 0, 0,"shift left test"});
+		  concurrent_trans.push_back('{32'hFA618A23, 32'h10, 4'h5, 0, 0, 0, 0,"shift left test"});
+		  
+		  concurrent_trans.push_back('{32'hFFFF236, 32'h11, 4'h6, 0, 0, 0, 0,"shift right test"});
+		  concurrent_trans.push_back('{32'h11111111, 32'h8, 4'h6, 0, 0, 0, 0,"shift right test"});
+		  concurrent_trans.push_back('{32'hFA618A23, 32'hCE456712, 4'h6, 0, 0, 0, 0,"shift right test"});
+    end
     //generate 40 random operations
+    /*  random testing not allowed
     for(int i=0; i<40; i++) begin
       if($urandom_range(1,2) == 1) begin  //select low
 	      if($urandom_range(1,2)==1) begin  //select addition
@@ -184,12 +221,13 @@ initial begin
 		    end
 		  end
     end
+    */
     
     foreach(concurrent_trans[i]) begin    //set expected on its own loop, since we're running 4 transactions at a time
       set_expected(concurrent_trans[i]);
     end
     
-    for(int i=0; i<40; i = i+4) begin //run 10 tests with an operation on each channel
+    for(int i=0; i<36; i = i+4) begin //run with an operation on each channel, loop 9 times
 		  run_trans_concurrent(concurrent_trans[i], concurrent_trans[i+1], concurrent_trans[i+2], concurrent_trans[i+3], 0);
     end
     
@@ -312,7 +350,7 @@ initial begin
       end
     end
     
-    error_messages.push_back("\ncorner cases: 2.5\n");
+    error_messages.push_back("\n2.5: check that data is ignored when its supposed to be\n");
     
     //corner cases 2.5: check that data is ignored when its supposed to be
     //this requires a custom run function
@@ -351,8 +389,6 @@ initial begin
 		        end
 	        end
 	        
-	        $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
-	        
         end else if(k == 2) begin
         
           @(posedge c_clk);
@@ -379,8 +415,6 @@ initial begin
 			        i = 10;
 		        end
 	        end
-	        
-	        $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
         
         end else if(k == 3) begin
         
@@ -409,8 +443,6 @@ initial begin
 		        end
 	        end
         
-          $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
-        
         end else if(k == 4) begin
         
           @(posedge c_clk);
@@ -437,8 +469,6 @@ initial begin
 			        i = 10;
 		        end
 	        end
-	        
-	        $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
     
         end
         
