@@ -307,7 +307,7 @@ initial begin
     
     //corner cases 2.5: check that data is ignored when its supposed to be
     
-    do_reset();
+    do_reset(reset);
     
     for(int k=1; k<5; k++) begin        //for every channel
       foreach(operation_trans[j]) begin //for each operation
