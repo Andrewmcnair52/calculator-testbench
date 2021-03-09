@@ -239,19 +239,19 @@ initial begin
 	      @(posedge c_clk);
 	      if (out_resp1 != 0) begin
 	         port_priority_count[0] = port_priority_count[0] + 1;
-	         i = 10;
+	         j = 10;
 	      end
 	      if (out_resp2 != 0) begin
 	         port_priority_count[1] = port_priority_count[1] + 1;
-	         i = 10;
+	         j = 10;
 	      end
 	      if (out_resp3 != 0) begin
           port_priority_count[2] = port_priority_count[2] + 1;
-          i = 10;
+          j = 10;
         end
         if (out_resp4 != 0) begin
           port_priority_count[3] = port_priority_count[3] + 1;
-          i = 10;
+          j = 10;
         end
       end
     
