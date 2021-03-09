@@ -373,11 +373,11 @@ initial begin
         end else if(k == 3) begin
         
           @(posedge c_clk);
-	        cb.req3_data_in <= t.param1;	//written @ edge + 2ns
-	        cb.req3_cmd_in <= t.cmd;			//written @ edge + 2ns
+	        cb.req3_data_in <= operation_trans[j].param1;	//written @ edge + 2ns
+	        cb.req3_cmd_in <= operation_trans[j].cmd;			//written @ edge + 2ns
 
 	        @(posedge c_clk);
-	        cb.req3_data_in <= t.param2;	//written @ edge + 2ns
+	        cb.req3_data_in <= operation_trans[j].param2;	//written @ edge + 2ns
 	        cb.req3_cmd_in <= 2'b00;
 	        
 	        @(posedge c_clk);
@@ -402,11 +402,11 @@ initial begin
         end else if(k == 4) begin
         
           @(posedge c_clk);
-	        cb.req4_data_in <= t.param1;
-	        cb.req4_cmd_in <= t.cmd;
+	        cb.req4_data_in <= operation_trans[j].param1;
+	        cb.req4_cmd_in <= operation_trans[j].cmd;
 
 	        @(posedge c_clk);
-	        cb.req4_data_in <= t.param2;
+	        cb.req4_data_in <= operation_trans[j].param2;
 	        cb.req4_cmd_in <= 2'b00;
 	        
 	        @(posedge c_clk);
