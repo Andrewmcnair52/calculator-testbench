@@ -236,7 +236,7 @@ initial begin
     //run each corner case on each channel
     for(int i=1; i<5; i++) begin
       foreach(corner_cases[j]) begin
-        set_expected(corner_cases[i]);
+        set_expected(corner_cases[j]);
 		    run_trans(corner_cases[j], i, 1);
 		    check_trans(corner_cases[j], i, 3);    //mode 3: check data and response
       end
