@@ -206,58 +206,52 @@ initial begin
     error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
     
     //2.2 port priority
-    for(int i=0; i<100; i++) begin
     
-      //save 4 operations
-      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
-      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
-      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
-      port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+    //save 4 operations
+    port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+    port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+    port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
+    port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
     
-      foreach(concurrent_trans[i]) begin    //set expected on its own loop, since we're running 4 transactions at a time
-        set_expected(concurrent_trans[i]);
-      end
-    
-      for(int i=0; i<40; i = i+4) begin //run 10 tests with an operation on each channel
-		    run_trans_concurrent(concurrent_trans[0], concurrent_trans[1], concurrent_trans[2], concurrent_trans[3], 0);
+    for(int i=0; i<100; i++) begin    //run concurrently, 100 iterations
 		   
-		    @(posedge c_clk);
-	      cb.req1_data_in <= concurrent_trans[1].param1;
-	      cb.req1_cmd_in <= concurrent_trans[1].cmd;
-	      cb.req2_data_in <= concurrent_trans[2].param1;
-	      cb.req2_cmd_in <= concurrent_trans[2].cmd;
-	      cb.req3_data_in <= concurrent_trans[3].param1;
-	      cb.req3_cmd_in <= concurrent_trans[3].cmd;
-	      cb.req4_data_in <= concurrent_trans[4].param1;
-	      cb.req4_cmd_in <= concurrent_trans[4].cmd;
+      @(posedge c_clk);
+	    cb.req1_data_in <= concurrent_trans[1].param1;
+	    cb.req1_cmd_in <= concurrent_trans[1].cmd;
+	    cb.req2_data_in <= concurrent_trans[2].param1;
+	    cb.req2_cmd_in <= concurrent_trans[2].cmd;
+	    cb.req3_data_in <= concurrent_trans[3].param1;
+	    cb.req3_cmd_in <= concurrent_trans[3].cmd;
+	    cb.req4_data_in <= concurrent_trans[4].param1;
+	    cb.req4_cmd_in <= concurrent_trans[4].cmd;
 
+	    @(posedge c_clk);
+	    cb.req1_data_in <= concurrent_trans[1].param2;
+	    cb.req1_cmd_in <= 2'b00;
+	    cb.req2_data_in <= concurrent_trans[2].param2;
+	    cb.req2_cmd_in <= 2'b00;
+	    cb.req3_data_in <= concurrent_trans[3].param2;
+	    cb.req3_cmd_in <= 2'b00;
+	    cb.req4_data_in <= concurrent_trans[4].param2;
+	    cb.req4_cmd_in <= 2'b00;
+		      
+	    for(int j=0; j<10; j++) begin		//give it 10 cycles to respond
 	      @(posedge c_clk);
-	      cb.req1_data_in <= concurrent_trans[1].param2;
-	      cb.req1_cmd_in <= 2'b00;
-	      cb.req2_data_in <= concurrent_trans[2].param2;
-	      cb.req2_cmd_in <= 2'b00;
-	      cb.req3_data_in <= concurrent_trans[3].param2;
-	      cb.req3_cmd_in <= 2'b00;
-	      cb.req4_data_in <= concurrent_trans[4].param2;
-	      cb.req4_cmd_in <= 2'b00;
-		  
-	      for(int j=0; j<10; j++) begin		//give it 10 cycles to respond
-	       @(posedge c_clk);
-	       if (out_resp1 != 0) begin
-	          port_priority_count[0] = port_priority_count[0] + 1;
-	          i = 10;
-	        end else if (out_resp2 != 0) begin
-	          port_priority_count[1] = port_priority_count[1] + 1;
-	          i = 10;
-	        end else if (out_resp3 != 0) begin
-	          port_priority_count[2] = port_priority_count[2] + 1;
-	          i = 10;
-	        end else if (out_resp4 != 0) begin
-	          port_priority_count[3] = port_priority_count[3] + 1;
-	          i = 10;
-	        end
+	      if (out_resp1 != 0) begin
+	         port_priority_count[0] = port_priority_count[0] + 1;
+	         i = 10;
+	      end
+	      if (out_resp2 != 0) begin
+	         port_priority_count[1] = port_priority_count[1] + 1;
+	         i = 10;
+	      if (out_resp3 != 0) begin
+          port_priority_count[2] = port_priority_count[2] + 1;
+          i = 10;
         end
-		   
+        if (out_resp4 != 0) begin
+          port_priority_count[3] = port_priority_count[3] + 1;
+          i = 10;
+        end
       end
     
     end
