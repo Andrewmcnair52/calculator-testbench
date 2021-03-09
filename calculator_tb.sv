@@ -232,23 +232,31 @@ initial begin
 	    cb.req4_data_in <= concurrent_trans[0].param2;
 	    cb.req4_cmd_in <= 2'b00;
 		      
-	    for(int j=0,k=0; j<20; j++) begin		//collect repsonses over 20 cycles
+		  foreach(channel_responded[i]) begin
+	      channel_responded[i] = 0;
+	    end
+		      
+	    for(int j=0,k=0; j<15; j++) begin		//collect repsonses over 15 cycles
 	      @(posedge c_clk);
-	      if (out_resp1 != 0) begin
+	      if ( (out_resp1 != 0) && (channel_responded[0]!=1) ) begin
 	         port_priority_count[0+k] = port_priority_count[0] + 1;
 	         k = k + 4;   //iterate k to count next place
+	         channel_responded[0] = 1;
 	      end
-	      if (out_resp2 != 0) begin
+	      if ( (out_resp2 != 0) && (channel_responded[1]!=1) ) begin
 	         port_priority_count[1+k] = port_priority_count[1] + 1;
 	         k = k + 4;   //iterate k to count next place
+	         channel_responded[1] = 1;
 	      end
-	      if (out_resp3 != 0) begin
+	      if ( (out_resp3 != 0) && (channel_responded[2]!=1) ) begin
           port_priority_count[2+k] = port_priority_count[2] + 1;
           k = k + 4;   //iterate k to count next place
+          channel_responded[2] = 1;
         end
-        if (out_resp4 != 0) begin
+        if ( (out_resp4 != 0) && (channel_responded[3]!=1) ) begin
           port_priority_count[3+k] = port_priority_count[3] + 1;
           k = k + 4;   //iterate k to count next place
+          channel_responded[3] = 1;
         end
       end
     
