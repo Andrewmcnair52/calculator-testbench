@@ -28,6 +28,7 @@ module calculator_tb;
 	
 	int error_count=0, success_count=0;
   string error_messages[$];
+  string tmp_string;
 
 	bit 			c_clk;
 	bit [6:0]		reset;
@@ -258,10 +259,14 @@ initial begin
     end
     
     error_messages.push_back("\nport priority test\n");
-    error_messages.push_back("channel 1 responded first %0d times", port_priority_count[0]);
-    error_messages.push_back("channel 2 responded first %0d times", port_priority_count[1]);
-    error_messages.push_back("channel 3 responded first %0d times", port_priority_count[2]);
-    error_messages.push_back("channel 4 responded first %0d times", port_priority_count[3]);
+    $sformat(tmp_string, "channel 1 responded first %0d times", port_priority_count[0]);
+    error_messages.push_back(tmp_string);
+    $sformat(tmp_string, "channel 2 responded first %0d times", port_priority_count[1]);
+    error_messages.push_back(tmp_string)
+    $sformat(tmp_string, "channel 3 responded first %0d times", port_priority_count[2]);
+    error_messages.push_back(tmp_string)
+    $sformat(tmp_string, "channel 4 responded first %0d times", port_priority_count[3]);
+    error_messages.push_back(tmp_string)
     
     
     //2.3 check that only the lower 5 bits of the second shift operand is used
@@ -667,8 +672,6 @@ endtask
 
 
 function automatic void check_trans(ref transaction t, input int channel, input int mode); //check transactions for actual/expected mismatches
-
-  string tmp_string;
 
   if(mode == 0) begin   //check response only
   
