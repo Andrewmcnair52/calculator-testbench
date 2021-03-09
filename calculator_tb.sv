@@ -255,13 +255,13 @@ initial begin
     end
     
     error_messages.push_back("\nport priority test\n");
-    $sformat(tmp_string, "first place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[0],port_priority_count,[1]port_priority_count[2],port_priority_count[3]);
+    $sformat(tmp_string, "first place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[0],port_priority_count[1],port_priority_count[2],port_priority_count[3]);
     error_messages.push_back(tmp_string);
-    $sformat(tmp_string, "second place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[4],port_priority_count,[5]port_priority_count[6],port_priority_count[7]);
+    $sformat(tmp_string, "second place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[4],port_priority_count[5],port_priority_count[6],port_priority_count[7]);
     error_messages.push_back(tmp_string);
-    $sformat(tmp_string, "third place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[8],port_priority_count,[9]port_priority_count[10],port_priority_count[11]);
+    $sformat(tmp_string, "third place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[8],port_priority_count[9],port_priority_count[10],port_priority_count[11]);
     error_messages.push_back(tmp_string);
-    $sformat(tmp_string,"first place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[12],port_priority_count,[13]port_priority_count[14],port_priority_count[15]);
+    $sformat(tmp_string, "first place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d", port_priority_count[12], port_priority_count[13], port_priority_count[14], port_priority_count[15]);
     error_messages.push_back(tmp_string);
     
     
