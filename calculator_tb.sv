@@ -253,7 +253,7 @@ initial begin
 	         $display("channel 2 response  cycle:%0d  k:%0d", j, k);
 	      end
 	      if ( (out_resp3 != 0) && (channel_responded[2]!=1) ) begin
-          port_priority_count[2+k] = port_priority_count[2+K] + 1;
+          port_priority_count[2+k] = port_priority_count[2+k] + 1;
           k = k + 4;   //iterate k to count next place
           channel_responded[2] = 1;
           $display("channel 3 response  cycle:%0d  k:%0d", j, k);
