@@ -245,12 +245,16 @@ initial begin
 	       @(posedge c_clk);
 	       if (out_resp1 != 0) begin
 	          port_priority_count[0] = port_priority_count[0] + 1;
+	          break;
 	        end else if (out_resp2 != 0) begin
 	          port_priority_count[1] = port_priority_count[1] + 1;
+	          break;
 	        end else if (out_resp3 != 0) begin
 	          port_priority_count[2] = port_priority_count[2] + 1;
+	          break;
 	        end else if (out_resp4 != 0) begin
 	          port_priority_count[3] = port_priority_count[3] + 1;
+	          break;
 	        end
         end
 		   
@@ -329,7 +333,7 @@ end
 
 /////////////////////////////////////////////////////////////////////////////////////// DUT hookup
 
-calc1_top calc1_top(	//i'm assuming the encrypted module is called calc1_top ....
+calc1_top calc1_top(
 	.c_clk(c_clk),
 	.reset(reset),
 	.req1_cmd_in(req1_cmd_in),
