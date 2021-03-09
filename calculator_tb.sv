@@ -566,7 +566,7 @@ task automatic set_expected (ref transaction t);
 		end
 	
 	end
-	else if(t.cmd==4'h0101) begin	//shift left
+	else if(t.cmd==4'b0101) begin	//shift left
 		
 		t.expected_resp = 2'b01;
 		t.expected_data = t.param1 << t.param2;
