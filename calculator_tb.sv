@@ -210,7 +210,7 @@ initial begin
     //save 4 operations
     port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
     
-    for(int i=0; i<100; i++) begin    //run concurrently, 100 iterations
+    for(int i=0; i<20; i++) begin    //run concurrently, 20 iterations
 		   
       @(posedge c_clk);
 	    cb.req1_data_in <= concurrent_trans[0].param1;
@@ -244,38 +244,34 @@ initial begin
 	         port_priority_count[k] = port_priority_count[k] + 1;
 	         k = k + 4;   //iterate k to count next place
 	         channel_responded[0] = 1;
-	         $display("channel 1 response  cycle:%0d  k:%0d", j, k);
 	      end
 	      if ( (out_resp2 != 0) && (channel_responded[1]!=1) ) begin
 	         port_priority_count[1+k] = port_priority_count[1+k] + 1;
 	         k = k + 4;   //iterate k to count next place
 	         channel_responded[1] = 1;
-	         $display("channel 2 response  cycle:%0d  k:%0d", j, k);
 	      end
 	      if ( (out_resp3 != 0) && (channel_responded[2]!=1) ) begin
           port_priority_count[2+k] = port_priority_count[2+k] + 1;
           k = k + 4;   //iterate k to count next place
           channel_responded[2] = 1;
-          $display("channel 3 response  cycle:%0d  k:%0d", j, k);
         end
         if ( (out_resp4 != 0) && (channel_responded[3]!=1) ) begin
           port_priority_count[3+k] = port_priority_count[3+k] + 1;
           k = k + 4;   //iterate k to count next place
           channel_responded[3] = 1;
-          $display("channel 4 response  cycle:%0d  k:%0d", j, k);
         end
       end
     
     end
     
     error_messages.push_back("\nport priority test\n");
-    $sformat(tmp_string, "first place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[0],port_priority_count[1],port_priority_count[2],port_priority_count[3]);
+    $sformat(tmp_string, "first place counts:  ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[0],port_priority_count[1],port_priority_count[2],port_priority_count[3]);
     error_messages.push_back(tmp_string);
     $sformat(tmp_string, "second place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[4],port_priority_count[5],port_priority_count[6],port_priority_count[7]);
     error_messages.push_back(tmp_string);
-    $sformat(tmp_string, "third place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[8],port_priority_count[9],port_priority_count[10],port_priority_count[11]);
+    $sformat(tmp_string, "third place counts:  ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d",port_priority_count[8],port_priority_count[9],port_priority_count[10],port_priority_count[11]);
     error_messages.push_back(tmp_string);
-    $sformat(tmp_string, "first place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d", port_priority_count[12], port_priority_count[13], port_priority_count[14], port_priority_count[15]);
+    $sformat(tmp_string, "fourth place counts: ch1:%0d, ch2:%0d, ch3:%0d, ch4:%0d", port_priority_count[12], port_priority_count[13], port_priority_count[14], port_priority_count[15]);
     error_messages.push_back(tmp_string);
     
     
