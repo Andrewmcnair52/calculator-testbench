@@ -244,6 +244,7 @@ initial begin
 	      if (out_resp2 != 0) begin
 	         port_priority_count[1] = port_priority_count[1] + 1;
 	         i = 10;
+	      end
 	      if (out_resp3 != 0) begin
           port_priority_count[2] = port_priority_count[2] + 1;
           i = 10;
