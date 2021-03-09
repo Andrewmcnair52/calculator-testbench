@@ -276,10 +276,11 @@ initial begin
     
     
     //2.3 check that only the lower 5 bits of the second shift operand is used
-    
-    
-    
-    
+
+
+
+
+
     
     do_reset(reset);
     error_messages.push_back("\n2.4: corner cases \n");
@@ -306,7 +307,134 @@ initial begin
     
     //corner cases 2.5: check that data is ignored when its supposed to be
     
+    do_reset();
     
+    for(int k=1; k<5; k++) begin        //for every channel
+      foreach(operation_trans[j]) begin //for each operation
+    
+        if(k == 1) begin
+
+	        @(posedge c_clk);
+	        cb.req1_data_in <= operation_trans[j].param1;
+	        cb.req1_cmd_in <= operation_trans[j].cmd;
+
+	        @(posedge c_clk);
+	        cb.req1_data_in <= operation_trans[j].param2;
+	        cb.req1_cmd_in <= 2'b10;
+	        
+	        @(posedge c_clk);
+	        cb.req1_data_in <= 32'hFF3;
+	        cb.req1_cmd_in <= 2'b10;
+		      
+	        for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		        @(posedge c_clk);
+		        if(i == 9) begin
+		        	operation_trans[j].actual_resp = out_resp1;
+	        		operation_trans[j].actual_data = out_data1;
+		        end
+		        else if (out_resp1 != 0) begin
+			        operation_trans[j].actual_resp = out_resp1;
+			        operation_trans[j].actual_data = out_data1;
+			        i = 10;
+		        end
+	        end
+	        
+	        $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+	        
+        end else if(k == 2) begin
+        
+          @(posedge c_clk);
+	        cb.req2_data_in <= operation_trans[j].param1;
+	        cb.req2_cmd_in <= operation_trans[j].cmd;
+
+	        @(posedge c_clk);
+	        cb.req2_data_in <= operation_trans[j].param2;
+	        cb.req2_cmd_in <= 2'b00;
+	        
+	        @(posedge c_clk);
+	        cb.req1_data_in <= 32'hFF3;
+	        cb.req1_cmd_in <= 2'b10;
+		      
+	        for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		        @(posedge c_clk);
+		        if(i == 9) begin
+		        	operation_trans[j].actual_resp = out_resp2;
+	        		operation_trans[j].actual_data = out_data2;
+		        end
+		        else if (out_resp2 != 0) begin
+			        operation_trans[j].actual_resp = out_resp2;
+			        operation_trans[j].actual_data = out_data2;
+			        i = 10;
+		        end
+	        end
+	        
+	        $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+        
+        end else if(k == 3) begin
+        
+          @(posedge c_clk);
+	        cb.req3_data_in <= t.param1;	//written @ edge + 2ns
+	        cb.req3_cmd_in <= t.cmd;			//written @ edge + 2ns
+
+	        @(posedge c_clk);
+	        cb.req3_data_in <= t.param2;	//written @ edge + 2ns
+	        cb.req3_cmd_in <= 2'b00;
+	        
+	        @(posedge c_clk);
+	        cb.req1_data_in <= 32'hFF3;
+	        cb.req1_cmd_in <= 2'b10;
+		      
+	        for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		        @(posedge c_clk);
+		        if(i == 9) begin
+		        	operation_trans[j].actual_resp = out_resp3;
+	        		operation_trans[j].actual_data = out_data3;
+		        end
+		        else if (out_resp3 != 0) begin
+			        operation_trans[j].actual_resp = out_resp3;
+			        operation_trans[j].actual_data = out_data3;
+			        i = 10;
+		        end
+	        end
+        
+          $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+        
+        end else if(k == 4) begin
+        
+          @(posedge c_clk);
+	        cb.req4_data_in <= t.param1;
+	        cb.req4_cmd_in <= t.cmd;
+
+	        @(posedge c_clk);
+	        cb.req4_data_in <= t.param2;
+	        cb.req4_cmd_in <= 2'b00;
+	        
+	        @(posedge c_clk);
+	        cb.req1_data_in <= 32'hFF3;
+	        cb.req1_cmd_in <= 2'b10;
+		      
+	        for(int i=0; i<10; i++) begin		//give it 10 cycles to respond
+		        @(posedge c_clk);
+		        if(i == 9) begin
+		        	operation_trans[j].actual_resp = out_resp4;
+	        		operation_trans[j].actual_data = out_data4;
+		        end
+		        else if (out_resp4 != 0) begin
+			        operation_trans[j].actual_resp = out_resp4;
+			        operation_trans[j].actual_data = out_data4;
+			        i = 10;
+		        end
+	        end
+	        
+	        $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+    
+        end
+        
+        //queue reused, actual_data overwritten on next iteration, so check transaction immediatly
+        check_trans(operation_trans[j], k, 3);
+        
+      end //close foreach(operation_trans[j])
+    end //close channel iteration loop, iterator k
     
     
     //run each corner case on each channel
@@ -512,7 +640,7 @@ task automatic run_trans(ref transaction t, input integer channel, input integer
 		  end
 	  end
   
-  end 
+  end
 
 endtask
 
