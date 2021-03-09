@@ -235,8 +235,6 @@ initial begin
 		  foreach(channel_responded[i]) begin
 	      channel_responded[i] = 0;
 	    end
-	    
-	    $display("iteration %0d", i);
 		      
 	    for(int j=0,k=0; j<15; j++) begin		//collect repsonses over 15 cycles
 	      @(posedge c_clk);
@@ -305,11 +303,25 @@ initial begin
     corner_cases.push_back('{32'hC4437B62, 32'h1F, 4'h5, 0, 0, 0, 0, "shift left 31 places"});
     corner_cases.push_back('{32'hC4437B62, 32'h1F, 4'h6, 0, 0, 0, 0, "shift right 31 places"});
     
-    //corner cases 2.5: check that data is ignored when its supposed to be
+    //run each corner case on each channel
+    for(int i=1; i<5; i++) begin
+      foreach(corner_cases[j]) begin
+        set_expected(corner_cases[j]);
+		    run_trans(corner_cases[j], i, 0);
+		    check_trans(corner_cases[j], i, 3);    //mode 3: check data and response
+      end
+    end
     
+    error_messages.push_back("\ncorner cases: 2.5\n");
+    
+    //corner cases 2.5: check that data is ignored when its supposed to be
+    //this requires a custom run function
     do_reset(reset);
     
     for(int k=1; k<5; k++) begin        //for every channel
+      
+      do_reset(reset);  //reset before testing on each channel begins
+      
       foreach(operation_trans[j]) begin //for each operation
     
         if(k == 1) begin
@@ -339,7 +351,7 @@ initial begin
 		        end
 	        end
 	        
-	        $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+	        $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
 	        
         end else if(k == 2) begin
         
@@ -368,7 +380,7 @@ initial begin
 		        end
 	        end
 	        
-	        $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+	        $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
         
         end else if(k == 3) begin
         
@@ -397,7 +409,7 @@ initial begin
 		        end
 	        end
         
-          $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+          $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
         
         end else if(k == 4) begin
         
@@ -426,7 +438,7 @@ initial begin
 		        end
 	        end
 	        
-	        $display("running channel 1, cmd: %h", operation_trans[j].cmd);
+	        $display("running channel %0d, cmd: %h", k, operation_trans[j].cmd);
     
         end
         
@@ -436,15 +448,7 @@ initial begin
       end //close foreach(operation_trans[j])
     end //close channel iteration loop, iterator k
     
-    
-    //run each corner case on each channel
-    for(int i=1; i<5; i++) begin
-      foreach(corner_cases[j]) begin
-        set_expected(corner_cases[j]);
-		    run_trans(corner_cases[j], i, 0);
-		    check_trans(corner_cases[j], i, 3);    //mode 3: check data and response
-      end
-    end
+    //END OF EVENT MODE TESTING
 
 	end else begin	//cycle mode, could not find any mention of how this works, or whether we need to test it
 	
