@@ -235,28 +235,34 @@ initial begin
 		  foreach(channel_responded[i]) begin
 	      channel_responded[i] = 0;
 	    end
+	    
+	    $display("iteration %0d", i);
 		      
 	    for(int j=0,k=0; j<15; j++) begin		//collect repsonses over 15 cycles
 	      @(posedge c_clk);
 	      if ( (out_resp1 != 0) && (channel_responded[0]!=1) ) begin
-	         port_priority_count[0+k] = port_priority_count[0] + 1;
+	         port_priority_count[k] = port_priority_count[k] + 1;
 	         k = k + 4;   //iterate k to count next place
 	         channel_responded[0] = 1;
+	         $display("channel 1 response  cycle:%0d  k:%0d", j, k);
 	      end
 	      if ( (out_resp2 != 0) && (channel_responded[1]!=1) ) begin
-	         port_priority_count[1+k] = port_priority_count[1] + 1;
+	         port_priority_count[1+k] = port_priority_count[1+k] + 1;
 	         k = k + 4;   //iterate k to count next place
 	         channel_responded[1] = 1;
+	         $display("channel 2 response  cycle:%0d  k:%0d", j, k);
 	      end
 	      if ( (out_resp3 != 0) && (channel_responded[2]!=1) ) begin
-          port_priority_count[2+k] = port_priority_count[2] + 1;
+          port_priority_count[2+k] = port_priority_count[2+K] + 1;
           k = k + 4;   //iterate k to count next place
           channel_responded[2] = 1;
+          $display("channel 3 response  cycle:%0d  k:%0d", j, k);
         end
         if ( (out_resp4 != 0) && (channel_responded[3]!=1) ) begin
-          port_priority_count[3+k] = port_priority_count[3] + 1;
+          port_priority_count[3+k] = port_priority_count[3+k] + 1;
           k = k + 4;   //iterate k to count next place
           channel_responded[3] = 1;
+          $display("channel 4 response  cycle:%0d  k:%0d", j, k);
         end
       end
     
