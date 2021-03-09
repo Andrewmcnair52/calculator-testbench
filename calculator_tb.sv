@@ -307,7 +307,7 @@ initial begin
       end
     end
 
-	end else begin	//cycle mode, its not specified how this works or if we need to test it
+	end else begin	//cycle mode, could not find any mention of how this works, or whether we need to test it
 	
 	end
 
@@ -694,13 +694,13 @@ function automatic void check_trans(ref transaction t, input int channel, input 
   
   end else begin  //check data and response
 
-    if( (t.actual_data!=t.expected_data) && (t.actual_resp!=t.expected_resp) ) begin
+    if( (t.actual_data==t.expected_data) && (t.actual_resp==t.expected_resp) ) begin
+      success_count = success_count + 1;
+    end else begin
       error_count = error_count + 1;
       $sformat(tmp_string, "%s: sent [%h,%h] with command %h, got [%h,%h] when expecting [%h,%h], on channel %0d",
       t.desc, t.param1, t.param2, t.cmd, t.actual_data, t.actual_resp, t.expected_data, t.expected_resp, channel);
       error_messages.push_back(tmp_string);
-    end else begin
-      success_count = success_count + 1;
     end
 
   end
