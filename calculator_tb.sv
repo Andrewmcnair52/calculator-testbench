@@ -18,6 +18,7 @@ module calculator_tb;
 	transaction operation_trans[$];         //tests for basic operations
 	transaction state_trans[$];             //clean state test transactions
 	transaction concurrent_trans[$];        //concurrent operation transactions
+	transaction corner_cases[$];            //corner cases tests
 	
 	int random_sequence_queue[$];
 	
@@ -204,7 +205,42 @@ initial begin
     //2.3 check that only the lower 5 bits of the second shift operand is used
     
     
+    do_reset(reset);
+    error_messages.push_back("\n2.4: corner cases \n");
     
+    //corner cases 2.4.1: add 2 numbers that overflow by one
+    corner_cases.push_back('{32'hC4437B63, 32'h3BBC849D, 4'h1, 0, 0, 0, 0, "overflow by 1"});
+    
+    //corner cases 2.4.2: add 2 numbers which sum to 0xFFFFFFFF
+    corner_cases.push_back('{32'hC4437B62, 32'h3BBC849D, 4'h1, 0, 0, 0, 0, "exactly max"});
+    
+    //corner cases 2.4.3: subtract 2 equal numbers
+    corner_cases.push_back('{32'hADD267E4, 32'hADD267E4, 4'h2, 0, 0, 0, 0, "subtract equal"});
+    
+    //corner cases 2.4.4: subtract a number that underflows by 1
+    corner_cases.push_back('{32'hC4437B62, 32'h3BBC849E, 4'h2, 0, 0, 0, 0, "underflow by 1"});
+    
+    //corner cases 2.4.5: shift left/right zero places
+    corner_cases.push_back('{32'hC4437B62, 32'h0, 4'h5, 0, 0, 0, 0, "shift left 0 places"});
+    corner_cases.push_back('{32'hC4437B62, 32'h0, 4'h6, 0, 0, 0, 0, "shift right 0 places"});
+    
+    //corner cases 2.4.6: shift left/right 31 places
+    corner_cases.push_back('{32'hC4437B62, 32'h31, 4'h5, 0, 0, 0, 0, "shift left 0 places"});
+    corner_cases.push_back('{32'hC4437B62, 32'h31, 4'h6, 0, 0, 0, 0, "shift right 0 places"});
+    
+    //corner cases 2.5: check that data is ignored when its supposed to be
+    
+    
+    
+    
+    //run each corner case on each channel
+    for(int i=1; i<5; i++) begin
+      foreach(corner_cases[j]) begin
+        set_expected(corner_cases[i]);
+		    run_trans(corner_cases[j], i, 1);
+		    check_trans(corner_cases[j], i, 3);    //mode 3: check data and response
+      end
+    end
 
 	end else begin	//cycle mode, its not specified how this works or if we need to test it
 	
