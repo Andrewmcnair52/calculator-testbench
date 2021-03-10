@@ -20,6 +20,7 @@ module calculator_tb;
 	transaction concurrent_trans[$];        //concurrent operation transactions
 	transaction corner_cases[$];            //corner cases tests
 	transaction port_priority[$];           //test for port priority
+	transaction shift_trans[$];				//test for only the lower 5 bits of the second shift operand is used
 	
 	int random_sequence_queue[$];
 	
@@ -241,7 +242,6 @@ initial begin
     end
     
     do_reset(reset); //reset when done
-    error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
     
     //2.2 port priority
     
@@ -313,10 +313,25 @@ initial begin
     
     //2.3 check that only the lower 5 bits of the second shift operand is used
 
+	do_reset(reset); //reset when done
+    error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
+	
+	//Test left shift with higher bits set
+	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h5, 0, 0, 0, 0,"shift left with higher bits set test"}); 
+	//Test right shift with higher bits set
+	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h6, 0, 0, 0, 0,"shift right with higher bits set test"});
 
-
-
-
+	//1.2 operations testing for each channel
+		for(int j=1; j<5; j++) begin		//for every channel
+		  foreach(shift_trans[i]) begin		  
+		   set_shift_expected(shift_trans[i]);
+		   run_trans(shift_trans[i], j, 0);      //debug on
+		   check_trans(shift_trans[i], j, 3);    //mode 3: check data and response
+		  end
+		
+		  do_reset(reset);  //reset after finnished with each channel
+		  
+	  end
     
     do_reset(reset);
     error_messages.push_back("\n2.4: corner cases \n");
@@ -824,7 +839,28 @@ task automatic set_expected (ref transaction t);
 
 endtask
 
+task automatic set_shift_expected (ref transaction t);
 
+
+	t.param2=t.param2[4:0];
+	if(t.cmd==4'b0101) begin	//shift left
+		
+		t.expected_resp = 2'b01;
+		t.expected_data = t.param1 << t.param2;
+		
+	end
+	else if(t.cmd==4'b0110) begin	//shift right
+		
+		t.expected_resp = 2'b01;
+		t.expected_data = t.param1 >> t.param2;
+		
+	end
+	else  begin
+
+		t.expected_resp = 2'b11;
+
+	end
+endtask
 
 task do_reset(inout bit [7:0] reset);	//reset the device
 
