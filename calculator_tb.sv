@@ -317,9 +317,11 @@ initial begin
     error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
 	
 	//Test left shift with higher bits set
-	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h5, 0, 0, 0, 0,"shift left with higher bits set test"}); 
+	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h5, 0, 0, 0, 0,"shift left with higher bits set test"});
+	shift_trans.push_back('{32'h0000FFFF, 32'h00A0CC03, 4'h5, 0, 0, 0, 0,"shift left with higher bits set test"}); 	
 	//Test right shift with higher bits set
 	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h6, 0, 0, 0, 0,"shift right with higher bits set test"});
+	shift_trans.push_back('{32'hFFFF0000, 32'h00A0CC13, 4'h6, 0, 0, 0, 0,"shift right with higher bits set test"});
 
 	//1.2 operations testing for each channel
 		for(int j=1; j<5; j++) begin		//for every channel
