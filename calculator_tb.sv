@@ -134,6 +134,9 @@ initial begin
 		state_trans.push_back('{32'hFFFF236, 32'h11, 4'h6, 0, 0, 0, 0,"shift right test"});
 		state_trans.push_back('{32'h11111111, 32'h8, 4'h6, 0, 0, 0, 0,"shift right test"});
 		state_trans.push_back('{32'hFA618A23, 32'hCE456712, 4'h6, 0, 0, 0, 0,"shift right test"});
+		
+		state_trans.shuffle();
+		
 		//random testing not allowed
 		/*
 		for(int i=0; i<80; i++) begin            //generate 80 random operations (20 operations per channel)
@@ -245,7 +248,7 @@ initial begin
     
     //2.2 port priority
     
-    //save 4 operations
+    //save 1 operation
     port_priority.push_back('{32'h227, 32'h568, 4'h1, 0, 0, 0, 0, "port priority test"});
     
     for(int i=0; i<20; i++) begin    //run concurrently, 20 iterations
@@ -313,8 +316,8 @@ initial begin
     
     //2.3 check that only the lower 5 bits of the second shift operand is used
 
-	do_reset(reset); //reset when done
-    error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
+	do_reset(reset);
+  error_messages.push_back("\n2.3: check that only the lower 5 bits of the second shift operand is used\n");
 	
 	//Test left shift with higher bits set
 	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h5, 0, 0, 0, 0,"shift left with higher bits set test"});
@@ -323,17 +326,16 @@ initial begin
 	shift_trans.push_back('{32'hFFFFFFFF, 32'h00A0CC03, 4'h6, 0, 0, 0, 0,"shift right with higher bits set test"});
 	shift_trans.push_back('{32'hFFFF0000, 32'h00A0CC13, 4'h6, 0, 0, 0, 0,"shift right with higher bits set test"});
 
-	//1.2 operations testing for each channel
-		for(int j=1; j<5; j++) begin		//for every channel
-		  foreach(shift_trans[i]) begin		  
-		   set_shift_expected(shift_trans[i]);
-		   run_trans(shift_trans[i], j, 0);      //debug on
-		   check_trans(shift_trans[i], j, 3);    //mode 3: check data and response
-		  end
+	for(int j=1; j<5; j++) begin		//for every channel
+    foreach(shift_trans[i]) begin		  
+		  set_shift_expected(shift_trans[i]);
+		  run_trans(shift_trans[i], j, 0);      //debug on
+		  check_trans(shift_trans[i], j, 3);    //mode 3: check data and response
+		end
 		
-		  do_reset(reset);  //reset after finnished with each channel
+		do_reset(reset);  //reset after finnished with each channel
 		  
-	  end
+	end
     
     do_reset(reset);
     error_messages.push_back("\n2.4: corner cases \n");
